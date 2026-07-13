@@ -1,16 +1,15 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Navigate, Route, Routes } from 'react-router'
+import Login from './Components/Login/Login'
+import DashboardMain from './Components/Layout/Dashboard/DashboardMain'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-    <h1>Prueba de funcionamiento de login</h1>
-    </>
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/ventas" element={<DashboardMain />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   )
 }
 

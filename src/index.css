@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+/* Typing animation for login hero */
+.typing-group {
+  display: inline-block;
+  overflow: hidden;
+  white-space: normal;
+  border-right: 3px solid rgba(255, 255, 255, 0.95);
+  clip-path: inset(0 100% 0 0);
+  animation: typingBlock 6.5s linear infinite;
+}
+
+@keyframes typingBlock {
+  0% { clip-path: inset(0 100% 0 0); }
+  32% { clip-path: inset(0 0 0 0); }
+  72% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(0 100% 0 0); }
+}
