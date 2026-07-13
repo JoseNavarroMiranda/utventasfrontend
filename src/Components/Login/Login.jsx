@@ -1,7 +1,25 @@
-import { Link } from 'react-router'
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { Link, useNavigate } from 'react-router'
+import { loginUser } from '../../store/slices/authSlice'
 import BackgroundPage from '../Background/backgroundPage'
+import Button from '../Shared/Button'
 
 function Login() {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const { loading, error } = useSelector((s) => s.auth)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const result = await dispatch(loginUser({ email, password }))
+    if (result.meta.requestStatus === 'fulfilled') {
+      navigate('/ventas')
+    }
+  }
+
   return (
     <BackgroundPage>
       <section className="flex min-h-screen w-full items-stretch justify-between">
@@ -26,13 +44,22 @@ function Login() {
               <h1 className="mt-2 text-3xl font-bold text-white">Inicia sesión</h1>
             </header>
 
-            <form className="space-y-5">
+            {error && (
+              <div className="mb-4 rounded-xl bg-red-400/10 px-4 py-3 text-sm text-red-300">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
               <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-slate-100">Correo institucional</span>
                 <input
                   type="email"
                   placeholder="tu-correo@utv.edu.mx"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  required
                 />
               </label>
 
@@ -41,16 +68,20 @@ function Login() {
                 <input
                   type="password"
                   placeholder="********"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  required
                 />
               </label>
 
-              <button
+              <Button
                 type="submit"
-                className="w-full rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-indigo-50 transition hover:bg-indigo-500"
+                loading={loading}
+                className="w-full"
               >
                 Entrar
-              </button>
+              </Button>
             </form>
 
             <footer className="mt-6 flex items-center justify-between text-sm text-slate-200">
