@@ -40,7 +40,7 @@ export const fetchProfile = createAsyncThunk(
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState: { user: null, loading: false, error: null },
+  initialState: { user: { id: 1, nombre: 'Jose Navarro', email: 'jose.navarro@utv.edu.mx', rol: 'vendedor' }, loading: false, error: null },
   reducers: {
     logout(state) {
       state.user = null

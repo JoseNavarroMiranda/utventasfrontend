@@ -57,9 +57,20 @@ export const toggleProductActive = createAsyncThunk(
   }
 )
 
+const MOCK_PRODUCTS = [
+  { id: 1, titulo: 'Laptop Lenovo Ideapad 5', descripcion: 'Equipo ideal para clases y proyectos. 16GB RAM, 512GB SSD.', precio: 8500, categoria: 'Tecnologia', contacto_metodo: 'whatsapp', es_activo: true, es_premium: true, imagenes: [], created_at: '2026-06-01T10:00:00Z' },
+  { id: 2, titulo: 'Mesa de estudio plegable', descripcion: 'Perfecta para departamento estudiantil. 120x60cm.', precio: 1200, categoria: 'Hogar', contacto_metodo: 'llamada', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-05-15T14:30:00Z' },
+  { id: 3, titulo: 'Calculadora científica Casio', descripcion: 'Modelo FX-991LAX. Ideal para ingenieria.', precio: 450, categoria: 'Escolar', contacto_metodo: 'correo', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-04-20T09:00:00Z' },
+  { id: 4, titulo: 'Audifonos inalambricos Sony', descripcion: 'Cancelacion de ruido. 30h de bateria.', precio: 680, categoria: 'Accesorios', contacto_metodo: 'whatsapp', es_activo: false, es_premium: false, imagenes: [], created_at: '2026-03-10T16:00:00Z' },
+  { id: 5, titulo: 'Camiseta universitaria talla M', descripcion: 'Nueva con etiqueta. Color gris.', precio: 250, categoria: 'Ropa', contacto_metodo: 'chat', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-06-05T11:00:00Z' },
+  { id: 6, titulo: 'Libro Calculo Diferencial', descripcion: 'Autores: Stewart. 8va edicion. Como nuevo.', precio: 350, categoria: 'Libros', contacto_metodo: 'correo', es_activo: true, es_premium: true, imagenes: [], created_at: '2026-05-28T08:00:00Z' },
+  { id: 7, titulo: 'Departamento cerca de UTV', descripcion: 'Renta de habitacion amueblada. Internet incluido.', precio: 3200, categoria: 'Espacios', contacto_metodo: 'llamada', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-06-10T15:00:00Z' },
+  { id: 8, titulo: 'Servicio de tutoria en matematicas', descripcion: 'Clases particulares de calculo, algebra y fisica.', precio: 150, categoria: 'Servicios', contacto_metodo: 'whatsapp', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-06-12T12:00:00Z' },
+]
+
 const productSlice = createSlice({
   name: 'products',
-  initialState: { items: [], loading: false, error: null },
+  initialState: { items: MOCK_PRODUCTS, loading: false, error: null },
   reducers: {
     clearProductError(state) {
       state.error = null

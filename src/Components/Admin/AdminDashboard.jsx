@@ -1,8 +1,8 @@
 import { NavLink, Outlet, useLocation } from 'react-router'
 import DashboardLayout from '../Layout/DashboardLayout'
-import { NAV_ITEMS } from '../../constants'
+import { ADMIN_NAV_ITEMS } from '../../constants'
 
-function SellerDashboard() {
+function AdminDashboard() {
   const { pathname } = useLocation()
 
   return (
@@ -10,15 +10,15 @@ function SellerDashboard() {
       <div className="flex flex-1">
         <aside className="hidden w-64 shrink-0 border-r border-white/10 bg-slate-950/50 p-4 lg:block">
           <nav className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
+            {ADMIN_NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === '/vendedor/dashboard'}
+                end={item.path === '/admin/dashboard'}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
                     isActive
-                      ? 'bg-cyan-400/10 text-cyan-300'
+                      ? 'bg-red-400/10 text-red-300'
                       : 'text-slate-300 hover:bg-white/5 hover:text-white'
                   }`
                 }
@@ -31,18 +31,18 @@ function SellerDashboard() {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <nav className="flex gap-1 overflow-x-auto border-b border-white/10 bg-slate-950/50 px-4 py-2 lg:hidden">
-            {NAV_ITEMS.map((item) => {
-              const isActive = item.path === '/vendedor/dashboard'
-                ? pathname === '/vendedor/dashboard'
+            {ADMIN_NAV_ITEMS.map((item) => {
+              const isActive = item.path === '/admin/dashboard'
+                ? pathname === '/admin/dashboard'
                 : pathname.startsWith(item.path)
               return (
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  end={item.path === '/vendedor/dashboard'}
+                  end={item.path === '/admin/dashboard'}
                   className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap transition ${
                     isActive
-                      ? 'bg-cyan-400/10 text-cyan-300'
+                      ? 'bg-red-400/10 text-red-300'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -63,4 +63,4 @@ function SellerDashboard() {
   )
 }
 
-export default SellerDashboard
+export default AdminDashboard

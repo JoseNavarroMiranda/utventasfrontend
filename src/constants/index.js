@@ -21,6 +21,14 @@ export const ORDER_STATUS = {
   paid_escrow: { label: 'Pagado (Escrow)', color: 'emerald' },
   delivered_completed: { label: 'Entregado', color: 'blue' },
   cancelled: { label: 'Cancelado', color: 'red' },
+  en_disputa: { label: 'En Disputa', color: 'orange' },
+  cancelado_reembolsado: { label: 'Reembolsado', color: 'purple' },
+}
+
+export const USER_ROLES = {
+  1: { label: 'Admin', color: 'red' },
+  2: { label: 'Vendedor', color: 'cyan' },
+  3: { label: 'Comprador', color: 'blue' },
 }
 
 export const WITHDRAWAL_STATUS = {
@@ -28,6 +36,15 @@ export const WITHDRAWAL_STATUS = {
   processed_payout: { label: 'Transferido', color: 'emerald' },
   rejected: { label: 'Rechazado', color: 'red' },
 }
+
+export const ADMIN_NAV_ITEMS = [
+  { path: '/admin/dashboard', label: 'Dashboard' },
+  { path: '/admin/usuarios', label: 'Usuarios' },
+  { path: '/admin/contenido', label: 'Contenido' },
+  { path: '/admin/disputas', label: 'Disputas' },
+  { path: '/admin/pagos', label: 'Pagos' },
+  { path: '/admin/logs', label: 'Auditoria' },
+]
 
 export const NAV_ITEMS = [
   { path: '/vendedor/dashboard', label: 'Dashboard' },
