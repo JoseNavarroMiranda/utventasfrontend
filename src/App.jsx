@@ -16,13 +16,39 @@ import ContentModeration from './Components/Admin/ContentModeration'
 import DisputeResolution from './Components/Admin/DisputeResolution'
 import PayoutManagement from './Components/Admin/PayoutManagement'
 import AuditLogs from './Components/Admin/AuditLogs'
+import CompradorDashboard from './Components/Comprador/CompradorDashboard'
+import BuyerDashboardOverview from './Components/Comprador/DashboardOverview'
+import PurchaseList from './Components/Comprador/PurchaseList'
+import PurchaseDetail from './Components/Comprador/PurchaseDetail'
+import DisputePanel from './Components/Comprador/DisputePanel'
+import ProfileSettings from './Components/Comprador/ProfileSettings'
+import Home from './Components/Public/Home'
+import Register from './Components/Public/Register'
+import VerifyAccount from './Components/Public/VerifyAccount'
+import ProductDetail from './Components/Public/ProductDetail'
+import Privacy from './Components/Public/Privacy'
+import Terms from './Components/Public/Terms'
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/registro" element={<Register />} />
+      <Route path="/verificar" element={<VerifyAccount />} />
+      <Route path="/productos/:id" element={<ProductDetail />} />
+      <Route path="/privacidad" element={<Privacy />} />
+      <Route path="/terminos" element={<Terms />} />
       <Route path="/ventas" element={<DashboardMain />} />
+
+      <Route path="/comprador" element={<CompradorDashboard />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<BuyerDashboardOverview />} />
+        <Route path="compras" element={<PurchaseList />} />
+        <Route path="compras/:id" element={<PurchaseDetail />} />
+        <Route path="disputas" element={<DisputePanel />} />
+        <Route path="ajustes" element={<ProfileSettings />} />
+      </Route>
 
       <Route path="/vendedor" element={<SellerDashboard />}>
         <Route index element={<Navigate to="dashboard" replace />} />

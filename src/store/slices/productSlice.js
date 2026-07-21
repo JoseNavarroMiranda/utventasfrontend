@@ -46,6 +46,28 @@ export const deleteProduct = createAsyncThunk(
   }
 )
 
+export const fetchProductById = createAsyncThunk(
+  'products/fetchById',
+  async (id, { rejectWithValue }) => {
+    try {
+      return await api.get(`/productos/${id}`)
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const fetchActiveProducts = createAsyncThunk(
+  'products/fetchActive',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await api.get('/productos', { es_activo: true })
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
 export const toggleProductActive = createAsyncThunk(
   'products/toggleActive',
   async ({ id, es_activo }, { rejectWithValue }) => {
@@ -99,6 +121,23 @@ const productSlice = createSlice({
       })
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.items = state.items.filter((p) => p.id !== action.payload)
+      })
+      .addCase(fetchProductById.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchProductById.fulfilled, (state, action) => {
+        state.loading = false
+        const idx = state.items.findIndex((p) => p.id === action.payload.id)
+        if (idx !== -1) state.items[idx] = action.payload
+        else state.items.push(action.payload)
+      })
+      .addCase(fetchProductById.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(fetchActiveProducts.fulfilled, (state, action) => {
+        state.items = action.payload
       })
       .addCase(toggleProductActive.fulfilled, (state, action) => {
         const idx = state.items.findIndex((p) => p.id === action.payload.id)

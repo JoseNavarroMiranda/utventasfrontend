@@ -46,6 +46,13 @@ export const ADMIN_NAV_ITEMS = [
   { path: '/admin/logs', label: 'Auditoria' },
 ]
 
+export const COMPRADOR_NAV_ITEMS = [
+  { path: '/comprador/dashboard', label: 'Inicio' },
+  { path: '/comprador/compras', label: 'Mis Compras' },
+  { path: '/comprador/disputas', label: 'Disputas' },
+  { path: '/comprador/ajustes', label: 'Ajustes' },
+]
+
 export const NAV_ITEMS = [
   { path: '/vendedor/dashboard', label: 'Dashboard' },
   { path: '/vendedor/publicaciones', label: 'Mis Publicaciones' },
