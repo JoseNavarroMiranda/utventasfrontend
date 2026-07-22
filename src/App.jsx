@@ -28,10 +28,15 @@ import VerifyAccount from './Components/Public/VerifyAccount'
 import ProductDetail from './Components/Public/ProductDetail'
 import Privacy from './Components/Public/Privacy'
 import Terms from './Components/Public/Terms'
+import UpdatePrompt from './Components/PWA/UpdatePrompt'
+import OfflineIndicator from './Components/PWA/OfflineIndicator'
 
 function App() {
   return (
-    <Routes>
+    <>
+      <OfflineIndicator />
+      <UpdatePrompt />
+      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Register />} />
@@ -74,6 +79,7 @@ function App() {
 
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
+    </>
   )
 }
 

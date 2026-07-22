@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g transform="translate(256, 240)">
+    <path d="M-100-20 L-100 30 Q-100 50 -70 50 L70 50 Q100 50 100 30 L100-20 Z" fill="none" stroke="#22d3ee" stroke-width="18" stroke-linejoin="round"/>
+    <path d="M-100-20 L-75-100 Q-70-120 -50-120 L-30-120 Q-10-120 -5-100 L0-30 L5-100 Q10-120 30-120 L50-120 Q70-120 75-100 L100-20" fill="none" stroke="#22d3ee" stroke-width="18" stroke-linejoin="round"/>
+  </g>
+  <text x="256" y="380" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="110" fill="#818cf8">UTV</text>
+</svg>

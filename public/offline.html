@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Sin conexión - UTVentas</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 480px;
+    }
+    .icon {
+      width: 80px; height: 80px;
+      margin: 0 auto 1.5rem;
+      background: rgba(34, 211, 238, 0.1);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icon svg { width: 40px; height: 40px; color: #22d3ee; }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+    p { color: #94a3b8; line-height: 1.6; font-size: 0.9rem; }
+    .btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.75rem 2rem;
+      background: #22d3ee;
+      color: #0f172a;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #06b6d4; }
+    .status {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    .status .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636a9 9 0 010 12.728m-2.829-2.829a5 5 0 000-7.07m-4.243 4.243a1 1 0 010-1.414M3 3l18 18" />
+      </svg>
+    </div>
+    <h1>Sin conexión</h1>
+    <p>Parece que no tienes acceso a internet. Verifica tu conexión e intenta de nuevo.</p>
+    <p style="margin-top:0.5rem;font-size:0.85rem;color:#64748b;">Los datos que ya estaban cargados pueden seguir disponibles.</p>
+    <button class="btn" onclick="window.location.reload()">Reintentar</button>
+    <div class="status">
+      <span class="dot"></span>
+      Sin conexión a internet
+    </div>
+  </div>
+</body>
+</html>
