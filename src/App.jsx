@@ -30,6 +30,7 @@ import Privacy from './Components/Public/Privacy'
 import Terms from './Components/Public/Terms'
 import UpdatePrompt from './Components/PWA/UpdatePrompt'
 import OfflineIndicator from './Components/PWA/OfflineIndicator'
+import ProtectedRoute from './Components/Auth/ProtectedRoute'
 
 function App() {
   return (
@@ -37,48 +38,69 @@ function App() {
       <OfflineIndicator />
       <UpdatePrompt />
       <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/registro" element={<Register />} />
-      <Route path="/verificar" element={<VerifyAccount />} />
-      <Route path="/productos/:id" element={<ProductDetail />} />
-      <Route path="/privacidad" element={<Privacy />} />
-      <Route path="/terminos" element={<Terms />} />
-      <Route path="/ventas" element={<DashboardMain />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Register />} />
+        <Route path="/verificar" element={<VerifyAccount />} />
+        <Route path="/productos/:id" element={<ProductDetail />} />
+        <Route path="/privacidad" element={<Privacy />} />
+        <Route path="/terminos" element={<Terms />} />
+        <Route path="/ventas" element={<DashboardMain />} />
 
-      <Route path="/comprador" element={<CompradorDashboard />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<BuyerDashboardOverview />} />
-        <Route path="compras" element={<PurchaseList />} />
-        <Route path="compras/:id" element={<PurchaseDetail />} />
-        <Route path="disputas" element={<DisputePanel />} />
-        <Route path="ajustes" element={<ProfileSettings />} />
-      </Route>
+        <Route
+          path="/comprador"
+          element={
+            <ProtectedRoute allowedRoles={['Comprador']}>
+              <CompradorDashboard />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<BuyerDashboardOverview />} />
+          <Route path="compras" element={<PurchaseList />} />
+          <Route path="compras/:id" element={<PurchaseDetail />} />
+          <Route path="disputas" element={<DisputePanel />} />
+          <Route path="ajustes" element={<ProfileSettings />} />
+        </Route>
 
-      <Route path="/vendedor" element={<SellerDashboard />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardOverview />} />
-        <Route path="publicaciones" element={<ProductList />} />
-        <Route path="publicaciones/nueva" element={<ProductForm />} />
-        <Route path="publicaciones/:id/editar" element={<ProductForm />} />
-        <Route path="publicaciones/:id/destacar" element={<PremiumSection />} />
-        <Route path="ventas" element={<SalesList />} />
-        <Route path="retiros" element={<WithdrawalPanel />} />
-        <Route path="estadisticas" element={<StatisticsView />} />
-      </Route>
+        <Route
+          path="/vendedor"
+          element={
+            <ProtectedRoute allowedRoles={['Vendedor']}>
+              <SellerDashboard />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardOverview />} />
+          <Route path="publicaciones" element={<ProductList />} />
+          <Route path="publicaciones/nueva" element={<ProductForm />} />
+          <Route path="publicaciones/:id/editar" element={<ProductForm />} />
+          <Route path="publicaciones/:id/destacar" element={<PremiumSection />} />
+          <Route path="ventas" element={<SalesList />} />
+          <Route path="retiros" element={<WithdrawalPanel />} />
+          <Route path="estadisticas" element={<StatisticsView />} />
+        </Route>
 
-      <Route path="/admin" element={<AdminDashboard />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<AdminOverview />} />
-        <Route path="usuarios" element={<UserModeration />} />
-        <Route path="contenido" element={<ContentModeration />} />
-        <Route path="disputas" element={<DisputeResolution />} />
-        <Route path="pagos" element={<PayoutManagement />} />
-        <Route path="logs" element={<AuditLogs />} />
-      </Route>
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={['Administrador']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<AdminOverview />} />
+          <Route path="usuarios" element={<UserModeration />} />
+          <Route path="contenido" element={<ContentModeration />} />
+          <Route path="disputas" element={<DisputeResolution />} />
+          <Route path="pagos" element={<PayoutManagement />} />
+          <Route path="logs" element={<AuditLogs />} />
+        </Route>
 
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
     </>
   )
 }

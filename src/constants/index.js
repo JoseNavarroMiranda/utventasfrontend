@@ -1,6 +1,5 @@
 export const CATEGORIES = [
   'Tecnología',
-  'Hogar',
   'Escolar',
   'Accesorios',
   'Ropa',

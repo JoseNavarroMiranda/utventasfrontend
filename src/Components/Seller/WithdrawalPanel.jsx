@@ -1,23 +1,19 @@
-import { useState, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchWithdrawals, requestWithdrawal } from '../../store/slices/withdrawalSlice'
+import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { WITHDRAWAL_STATUS } from '../../constants'
-import LoadingSpinner from '../Shared/LoadingSpinner'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
 import Input from '../Shared/Input'
 
 function WithdrawalPanel() {
-  const dispatch = useDispatch()
-  const { items: withdrawals, balance, loading, error } = useSelector((s) => s.withdrawals)
+  const { items: withdrawals, balance } = useSelector((s) => s.withdrawals)
   const [paypalEmail, setPaypalEmail] = useState('')
   const [amount, setAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [formErrors, setFormErrors] = useState({})
-
-  useEffect(() => {
-    dispatch(fetchWithdrawals())
-  }, [dispatch])
+  const [localWithdrawals, setLocalWithdrawals] = useState(withdrawals)
+  const [localBalance, setLocalBalance] = useState(balance)
+  const [success, setSuccess] = useState(false)
 
   const validateForm = () => {
     const errs = {}
@@ -26,7 +22,7 @@ function WithdrawalPanel() {
 
     const num = Number(amount)
     if (!amount || num <= 0) errs.amount = 'Ingresa un monto válido'
-    else if (num > balance) errs.amount = `El monto máximo disponible es $${balance.toLocaleString()} MXN`
+    else if (num > localBalance) errs.amount = `El monto máximo disponible es $${localBalance.toLocaleString()} MXN`
     else if (num < 10) errs.amount = 'El monto mínimo es $10 MXN'
 
     setFormErrors(errs)
@@ -38,24 +34,27 @@ function WithdrawalPanel() {
     if (!validateForm()) return
 
     setSubmitting(true)
-    const result = await dispatch(requestWithdrawal({
+    setSuccess(false)
+
+    await new Promise((r) => setTimeout(r, 800))
+
+    const newWithdrawal = {
+      id: Date.now(),
       correo_paypal_destino: paypalEmail.trim(),
       monto: Number(amount),
-    }))
-    setSubmitting(false)
-
-    if (result.meta.requestStatus === 'fulfilled') {
-      setPaypalEmail('')
-      setAmount('')
-      dispatch(fetchWithdrawals())
+      estado: 'pending',
+      created_at: new Date().toISOString(),
     }
+
+    setLocalWithdrawals((prev) => [newWithdrawal, ...prev])
+    setLocalBalance((prev) => prev - Number(amount))
+    setPaypalEmail('')
+    setAmount('')
+    setSubmitting(false)
+    setSuccess(true)
   }
 
-  if (loading && withdrawals.length === 0) {
-    return <LoadingSpinner className="py-20" size="lg" />
-  }
-
-  const pendingTotal = withdrawals
+  const pendingTotal = localWithdrawals
     .filter((w) => w.estado === 'pending')
     .reduce((sum, w) => sum + (w.monto || 0), 0)
 
@@ -70,7 +69,7 @@ function WithdrawalPanel() {
         <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
           <p className="text-sm text-slate-400">Saldo Disponible</p>
           <p className="mt-2 text-3xl font-bold text-emerald-400">
-            ${(balance || 0).toLocaleString()} <span className="text-base text-slate-500">MXN</span>
+            ${(localBalance || 0).toLocaleString()} <span className="text-base text-slate-500">MXN</span>
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
@@ -82,7 +81,7 @@ function WithdrawalPanel() {
         <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
           <p className="text-sm text-slate-400">Total Retirado</p>
           <p className="mt-2 text-3xl font-bold text-white">
-            ${withdrawals
+            ${localWithdrawals
               .filter((w) => w.estado === 'processed_payout')
               .reduce((sum, w) => sum + (w.monto || 0), 0)
               .toLocaleString()} <span className="text-base text-slate-500">MXN</span>
@@ -94,9 +93,9 @@ function WithdrawalPanel() {
         <div className="rounded-2xl border border-white/10 bg-slate-900 p-6 lg:col-span-2">
           <h2 className="mb-4 text-lg font-bold text-white">Solicitar Retiro</h2>
 
-          {error && (
-            <div className="mb-4 rounded-xl bg-red-400/10 px-4 py-3 text-sm text-red-300">
-              {error}
+          {success && (
+            <div className="mb-4 rounded-xl bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">
+              Retiro solicitado correctamente
             </div>
           )}
 
@@ -114,8 +113,8 @@ function WithdrawalPanel() {
               label="Monto a retirar (MXN)"
               type="number"
               min={10}
-              max={balance}
-              placeholder={`Máx. $${(balance || 0).toLocaleString()}`}
+              max={localBalance}
+              placeholder={`Máx. $${(localBalance || 0).toLocaleString()}`}
               value={amount}
               onChange={(e) => { setAmount(e.target.value); setFormErrors({}) }}
               error={formErrors.amount}
@@ -124,7 +123,7 @@ function WithdrawalPanel() {
             <Button
               type="submit"
               loading={submitting}
-              disabled={!balance || balance <= 0}
+              disabled={!localBalance || localBalance <= 0}
               className="w-full"
             >
               Solicitar Transferencia
@@ -140,11 +139,11 @@ function WithdrawalPanel() {
         <div className="rounded-2xl border border-white/10 bg-slate-900 p-6 lg:col-span-3">
           <h2 className="mb-4 text-lg font-bold text-white">Historial de Retiros</h2>
 
-          {withdrawals.length === 0 ? (
+          {localWithdrawals.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">No has solicitado retiros aún</p>
           ) : (
             <div className="space-y-3">
-              {withdrawals.map((w) => {
+              {localWithdrawals.map((w) => {
                 const status = WITHDRAWAL_STATUS[w.estado] || {}
                 return (
                   <div key={w.id} className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">

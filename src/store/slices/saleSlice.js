@@ -5,7 +5,7 @@ export const fetchSales = createAsyncThunk(
   'sales/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/ventas')
+      return await api.get('/api/vendedor/historial-ventas')
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -16,7 +16,7 @@ export const validateToken = createAsyncThunk(
   'sales/validateToken',
   async ({ saleId, token_entrega }, { rejectWithValue }) => {
     try {
-      return await api.post(`/ventas/${saleId}/validar-token`, { token_entrega })
+      return await api.put('/api/pedidos/entregar-con-pin', { pedido_id: saleId, token_entrega })
     } catch (err) {
       return rejectWithValue(err.message)
     }

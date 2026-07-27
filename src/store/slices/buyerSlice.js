@@ -5,7 +5,7 @@ export const fetchPurchases = createAsyncThunk(
   'buyer/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/compras')
+      return await api.get('/api/comprador/mis-compras')
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -16,7 +16,7 @@ export const fetchPurchaseDetail = createAsyncThunk(
   'buyer/fetchDetail',
   async (id, { rejectWithValue }) => {
     try {
-      return await api.get(`/compras/${id}`)
+      return await api.get(`/api/comprador/mis-compras/${id}`)
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -25,9 +25,9 @@ export const fetchPurchaseDetail = createAsyncThunk(
 
 export const openDispute = createAsyncThunk(
   'buyer/openDispute',
-  async ({ purchaseId, motivo, descripcion }, { rejectWithValue }) => {
+  async ({ purchaseId, motivo, descripcion: _descripcion }, { rejectWithValue }) => {
     try {
-      return await api.post(`/compras/${purchaseId}/disputa`, { motivo, descripcion })
+      return await api.post('/api/comprador/disputas', { pedido_id: purchaseId, motivo })
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -38,7 +38,7 @@ export const updateProfile = createAsyncThunk(
   'buyer/updateProfile',
   async (data, { rejectWithValue }) => {
     try {
-      return await api.put('/perfil', data)
+      return await api.put('/api/sesiones/actualizar-perfil', data)
     } catch (err) {
       return rejectWithValue(err.message)
     }

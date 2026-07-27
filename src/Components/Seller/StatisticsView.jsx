@@ -7,7 +7,6 @@ import {
 } from 'recharts'
 import { fetchProducts } from '../../store/slices/productSlice'
 import { fetchSales } from '../../store/slices/saleSlice'
-import { fetchWithdrawals } from '../../store/slices/withdrawalSlice'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import { ORDER_STATUS } from '../../constants'
 
@@ -45,7 +44,6 @@ function StatisticsView() {
   useEffect(() => {
     if (!products.length) dispatch(fetchProducts())
     if (!sales.length) dispatch(fetchSales())
-    dispatch(fetchWithdrawals())
   }, [dispatch, products.length, sales.length])
 
   const loading = pLoading || sLoading

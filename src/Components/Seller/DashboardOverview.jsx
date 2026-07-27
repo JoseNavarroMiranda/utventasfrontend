@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { fetchProducts } from '../../store/slices/productSlice'
 import { fetchSales } from '../../store/slices/saleSlice'
-import { fetchWithdrawals } from '../../store/slices/withdrawalSlice'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import Badge from '../Shared/Badge'
 import { ORDER_STATUS } from '../../constants'
@@ -26,7 +25,6 @@ function DashboardOverview() {
   useEffect(() => {
     dispatch(fetchProducts())
     dispatch(fetchSales())
-    dispatch(fetchWithdrawals())
   }, [dispatch])
 
   const loading = productsLoading || salesLoading || wLoading

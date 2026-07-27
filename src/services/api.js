@@ -10,7 +10,12 @@ async function request(endpoint, options = {}) {
     ...options.headers,
   }
 
-  const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers })
+  let res
+  try {
+    res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers })
+  } catch {
+    throw new Error('No se pudo conectar con el servidor. Verifica que el backend esté corriendo en http://localhost:3000')
+  }
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: res.statusText }))

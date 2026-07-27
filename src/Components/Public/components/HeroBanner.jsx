@@ -1,5 +1,3 @@
-import { Link } from 'react-router'
-
 function HeroBanner({ search, onSearchChange }) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 py-20 lg:py-32">
@@ -32,15 +30,7 @@ function HeroBanner({ search, onSearchChange }) {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-4 text-sm text-slate-400">
-          <Link to="/registro" className="font-medium text-cyan-300 hover:text-cyan-200">
-            Crear cuenta gratis
-          </Link>
-          <span className="text-slate-600">·</span>
-          <Link to="/login" className="font-medium text-cyan-300 hover:text-cyan-200">
-            Iniciar sesión
-          </Link>
-        </div>
+
       </div>
     </section>
   )

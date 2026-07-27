@@ -1,23 +1,32 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router'
 import { loginUser } from '../../store/slices/authSlice'
 import BackgroundPage from '../Background/backgroundPage'
 import Button from '../Shared/Button'
 
+const ROLE_HOME = {
+  Administrador: '/admin/dashboard',
+  Vendedor: '/vendedor/dashboard',
+  Comprador: '/comprador/dashboard',
+}
+
 function Login() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { loading, error } = useSelector((s) => s.auth)
+  const { user, loading, error } = useSelector((s) => s.auth)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
+  useEffect(() => {
+    if (user?.rol && ROLE_HOME[user.rol]) {
+      navigate(ROLE_HOME[user.rol], { replace: true })
+    }
+  }, [user, navigate])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const result = await dispatch(loginUser({ email, password }))
-    if (result.meta.requestStatus === 'fulfilled') {
-      navigate('/ventas')
-    }
+    dispatch(loginUser({ email, password }))
   }
 
   return (

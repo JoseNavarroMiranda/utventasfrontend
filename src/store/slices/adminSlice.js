@@ -5,7 +5,7 @@ export const fetchAdminMetrics = createAsyncThunk(
   'admin/fetchMetrics',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/admin/metricas')
+      return await api.get('/api/admin/kpis-ventas')
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -16,7 +16,7 @@ export const suspendUser = createAsyncThunk(
   'admin/suspendUser',
   async ({ id, suspendido }, { rejectWithValue }) => {
     try {
-      return await api.patch(`/admin/usuarios/${id}`, { suspendido })
+      return await api.put(`/api/admin/usuarios/${id}/estatus`, { es_activo: !suspendido })
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -27,7 +27,7 @@ export const verifyUser = createAsyncThunk(
   'admin/verifyUser',
   async ({ id, verificado }, { rejectWithValue }) => {
     try {
-      return await api.patch(`/admin/usuarios/${id}`, { verificado })
+      return await api.put(`/api/admin/usuarios/${id}/estatus`, { es_activo: verificado })
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -38,7 +38,7 @@ export const updateUserRole = createAsyncThunk(
   'admin/updateUserRole',
   async ({ id, rol_id }, { rejectWithValue }) => {
     try {
-      return await api.patch(`/admin/usuarios/${id}`, { rol_id })
+      return await api.put(`/api/admin/usuarios/${id}/estatus`, { rol_id })
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -49,7 +49,7 @@ export const resolveDispute = createAsyncThunk(
   'admin/resolveDispute',
   async ({ id, estado, notas_auditoria }, { rejectWithValue }) => {
     try {
-      return await api.post(`/admin/disputas/${id}/resolver`, { estado, notas_auditoria })
+      return await api.put(`/api/admin/disputas/${id}/resolver`, { veredicto: estado, resolucion_texto: notas_auditoria })
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -60,7 +60,7 @@ export const approveWithdrawal = createAsyncThunk(
   'admin/approveWithdrawal',
   async ({ id, paypal_payout_batch_id }, { rejectWithValue }) => {
     try {
-      return await api.post(`/admin/retiros/${id}/aprobar`, { paypal_payout_batch_id })
+      return await api.post(`/api/admin/retiros/${id}/aprobar`, { paypal_payout_batch_id })
     } catch (err) {
       return rejectWithValue(err.message)
     }

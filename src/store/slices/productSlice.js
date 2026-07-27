@@ -5,7 +5,7 @@ export const fetchProducts = createAsyncThunk(
   'products/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/productos/mis-publicaciones')
+      return await api.get('/api/vendedor/mis-publicaciones')
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -16,7 +16,7 @@ export const createProduct = createAsyncThunk(
   'products/create',
   async (productData, { rejectWithValue }) => {
     try {
-      return await api.post('/productos', productData)
+      return await api.post('/api/vendedor/crear', productData)
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -27,7 +27,7 @@ export const updateProduct = createAsyncThunk(
   'products/update',
   async ({ id, ...data }, { rejectWithValue }) => {
     try {
-      return await api.put(`/productos/${id}`, data)
+      return await api.put(`/api/vendedor/editar/${id}`, data)
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -38,7 +38,7 @@ export const deleteProduct = createAsyncThunk(
   'products/delete',
   async (id, { rejectWithValue }) => {
     try {
-      await api.delete(`/productos/${id}`)
+      await api.delete(`/api/vendedor/eliminar/${id}`)
       return id
     } catch (err) {
       return rejectWithValue(err.message)
@@ -50,7 +50,7 @@ export const fetchProductById = createAsyncThunk(
   'products/fetchById',
   async (id, { rejectWithValue }) => {
     try {
-      return await api.get(`/productos/${id}`)
+      return await api.get(`/api/productos/${id}`)
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -61,7 +61,7 @@ export const fetchActiveProducts = createAsyncThunk(
   'products/fetchActive',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/productos', { es_activo: true })
+      return await api.get('/api/productos', { es_activo: true })
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -72,7 +72,7 @@ export const toggleProductActive = createAsyncThunk(
   'products/toggleActive',
   async ({ id, es_activo }, { rejectWithValue }) => {
     try {
-      return await api.patch(`/productos/${id}`, { es_activo })
+      return await api.put(`/api/vendedor/editar/${id}`, { es_activo })
     } catch (err) {
       return rejectWithValue(err.message)
     }
