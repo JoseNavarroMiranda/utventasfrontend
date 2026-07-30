@@ -22,7 +22,7 @@ function UpdatePrompt() {
   if (!offlineReady && !needRefresh) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-slide-up">
+    <div className="fixed bottom-4 left-4 right-4 z-50 sm:left-auto sm:right-4 sm:max-w-sm animate-slide-up">
       <div className="rounded-2xl border border-white/10 bg-slate-900 p-4 shadow-2xl shadow-black/50">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-400/10">

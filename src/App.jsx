@@ -21,7 +21,7 @@ import BuyerDashboardOverview from './Components/Comprador/DashboardOverview'
 import PurchaseList from './Components/Comprador/PurchaseList'
 import PurchaseDetail from './Components/Comprador/PurchaseDetail'
 import DisputePanel from './Components/Comprador/DisputePanel'
-import ProfileSettings from './Components/Comprador/ProfileSettings'
+import ProfileSettings from './Components/Shared/ProfileSettings'
 import Home from './Components/Public/Home'
 import Register from './Components/Public/Register'
 import VerifyAccount from './Components/Public/VerifyAccount'
@@ -80,6 +80,7 @@ function App() {
           <Route path="ventas" element={<SalesList />} />
           <Route path="retiros" element={<WithdrawalPanel />} />
           <Route path="estadisticas" element={<StatisticsView />} />
+          <Route path="ajustes" element={<ProfileSettings />} />
         </Route>
 
         <Route
@@ -97,6 +98,7 @@ function App() {
           <Route path="disputas" element={<DisputeResolution />} />
           <Route path="pagos" element={<PayoutManagement />} />
           <Route path="logs" element={<AuditLogs />} />
+          <Route path="ajustes" element={<ProfileSettings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

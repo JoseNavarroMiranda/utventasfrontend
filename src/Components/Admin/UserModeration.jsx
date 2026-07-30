@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { suspendUser, verifyUser, updateUserRole } from '../../store/slices/adminSlice'
+import { fetchUsers, suspendUser, verifyUser, updateUserRole } from '../../store/slices/adminSlice'
 import { USER_ROLES } from '../../constants'
 import { Table, Td } from '../Shared/Table'
 import Badge from '../Shared/Badge'
@@ -12,6 +12,10 @@ function UserModeration() {
   const dispatch = useDispatch()
   const { users } = useSelector((s) => s.admin)
   const [roleModal, setRoleModal] = useState(null)
+
+  useEffect(() => {
+    dispatch(fetchUsers())
+  }, [dispatch])
   const [selectedRole, setSelectedRole] = useState('')
 
   const handleSuspend = (user) => {

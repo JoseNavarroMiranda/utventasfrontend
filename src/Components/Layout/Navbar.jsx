@@ -36,6 +36,12 @@ const NAV_BY_ROLE = {
   },
 }
 
+const ROLE_TO_PATH = {
+  Comprador: 'comprador',
+  Vendedor: 'vendedor',
+  Administrador: 'admin',
+}
+
 function Navbar() {
   const { user } = useSelector((s) => s.auth)
   const dispatch = useDispatch()
@@ -61,7 +67,7 @@ function Navbar() {
   const roleNav = NAV_BY_ROLE[user?.rol]
 
   return (
-    <header className="border-b border-white/10 bg-slate-950/90 backdrop-blur">
+    <header className="relative z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
         <Link to="/" className="text-lg font-black tracking-tight text-white">
           UTVentas
@@ -76,7 +82,7 @@ function Navbar() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setOpen(!open)}
-                className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium transition hover:bg-white/20"
+                className="flex min-h-[44px] items-center gap-1.5 rounded-lg bg-white/10 px-3 py-2 text-xs font-medium transition hover:bg-white/20"
               >
                 {user.nombre}
                 <svg className={`h-3 w-3 transition ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,14 +91,14 @@ function Navbar() {
               </button>
 
               {open && (
-                <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-white/10 bg-slate-900 py-2 shadow-xl">
+                <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border border-white/10 bg-slate-900 py-2 shadow-xl z-50">
                   <div className="border-b border-white/10 px-4 py-2">
                     <p className="text-sm font-medium text-white">{user.nombre}</p>
                     <p className="text-xs text-slate-400">{user.email}</p>
                   </div>
 
                   <Link
-                    to="/comprador/ajustes"
+                    to={`/${ROLE_TO_PATH[user?.rol] || 'comprador'}/ajustes`}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white"
                   >

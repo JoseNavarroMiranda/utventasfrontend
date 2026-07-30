@@ -5,7 +5,8 @@ export const fetchSales = createAsyncThunk(
   'sales/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/api/vendedor/historial-ventas')
+      const res = await api.get('/api/vendedor/historial-ventas')
+      return res.ventas ?? []
     } catch (err) {
       return rejectWithValue(err.message)
     }

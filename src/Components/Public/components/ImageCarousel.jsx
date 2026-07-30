@@ -35,13 +35,13 @@ function ImageCarousel({ images = [], productName = 'Producto' }) {
           <>
             <button
               onClick={() => setCurrent((p) => (p === 0 ? images.length - 1 : p - 1))}
-              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition hover:bg-black/70"
+              className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full bg-black/50 p-3 text-white transition hover:bg-black/70 min-h-[44px] min-w-[44px]"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
             <button
               onClick={() => setCurrent((p) => (p === images.length - 1 ? 0 : p + 1))}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition hover:bg-black/70"
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full bg-black/50 p-3 text-white transition hover:bg-black/70 min-h-[44px] min-w-[44px]"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>

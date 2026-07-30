@@ -1,11 +1,13 @@
 export const CATEGORIES = [
-  'Tecnología',
-  'Escolar',
-  'Accesorios',
-  'Ropa',
-  'Libros',
-  'Servicios',
-  'Espacios',
+  'Libros y Papelería',
+  'Electrónica y Componentes',
+  'Smartphones y Accesorios',
+  'Computación y Laptops',
+  'Videojuegos y Consolas',
+  'Ropa y Uniformes',
+  'Alojamiento y Rentas',
+  'Otros',
+  'Test Category',
 ]
 
 export const CONTACT_METHODS = [
@@ -43,6 +45,7 @@ export const ADMIN_NAV_ITEMS = [
   { path: '/admin/disputas', label: 'Disputas' },
   { path: '/admin/pagos', label: 'Pagos' },
   { path: '/admin/logs', label: 'Auditoria' },
+  { path: '/admin/ajustes', label: 'Ajustes' },
 ]
 
 export const COMPRADOR_NAV_ITEMS = [
@@ -59,6 +62,7 @@ export const NAV_ITEMS = [
   { path: '/vendedor/ventas', label: 'Mis Ventas' },
   { path: '/vendedor/retiros', label: 'Retiros' },
   { path: '/vendedor/estadisticas', label: 'Estadisticas' },
+  { path: '/vendedor/ajustes', label: 'Ajustes' },
 ]
 
 export const API_BASE = import.meta.env.VITE_API_URL || ''

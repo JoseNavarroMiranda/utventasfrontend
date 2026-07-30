@@ -5,7 +5,153 @@ export const fetchAdminMetrics = createAsyncThunk(
   'admin/fetchMetrics',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/api/admin/kpis-ventas')
+      const res = await api.get('/api/admin/kpis-ventas')
+      return {
+        ingresos_confirmados: res.kpis?.ingresos_confirmados ?? 0,
+        fondos_en_escrow: res.kpis?.fondos_en_escrow ?? 0,
+        pedidos_completados: res.kpis?.pedidos_completados ?? 0,
+        ticket_promedio: res.kpis?.ticket_promedio ?? 0,
+        total_usuarios: res.kpis?.total_usuarios ?? 0,
+        usuarios_verificados: res.kpis?.usuarios_verificados ?? 0,
+        disputas_activas: res.kpis?.disputas_activas ?? 0,
+        productos_publicados: res.kpis?.productos_publicados ?? 0,
+        desglose_estados: res.desglose_estados ?? {},
+        top_productos: res.top_productos ?? [],
+      }
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const fetchUsers = createAsyncThunk(
+  'admin/fetchUsers',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get('/api/admin/usuarios')
+      return (res.data || []).map((u) => ({
+        id: u.usuario_id,
+        nombre: u.nombre,
+        email: u.correo,
+        rol_id: u.Rol?.rol_id ?? u.rol_id ?? 3,
+        verificado: u.es_verificado ?? false,
+        suspendido: u.es_activo === false,
+        created_at: u.fecha_registro,
+      }))
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const fetchDisputes = createAsyncThunk(
+  'admin/fetchDisputes',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get('/api/admin/disputas')
+      return (res.data || []).map((d) => ({
+        id: d.disputa_id ?? d.id,
+        pedido_id: d.pedido_id,
+        producto: d.Producto ? { titulo: d.Producto.titulo } : (d.producto || { titulo: '—' }),
+        comprador: d.Comprador ? { nombre: d.Comprador.nombre, email: d.Comprador.correo } : (d.comprador || { nombre: '—' }),
+        vendedor: d.Vendedor ? { nombre: d.Vendedor.nombre, email: d.Vendedor.correo } : (d.vendedor || { nombre: '—' }),
+        monto: d.monto ?? d.Pedido?.precio_final ?? 0,
+        estado: d.estado,
+        created_at: d.fecha_creacion ?? d.created_at,
+        historico: d.HistoricoPedidos?.map((h) => ({
+          fecha: h.fecha_cambio,
+          accion: h.accion,
+          usuario: h.UsuarioAccion?.nombre || h.usuario_accion_id || 'Sistema',
+          notas: h.detalle,
+        })) || d.historico || [],
+      }))
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const fetchAuditLogs = createAsyncThunk(
+  'admin/fetchAuditLogs',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get('/api/admin/auditoria-pedidos')
+      return (res.data || []).map((l) => ({
+        id: l.historico_id ?? l.id,
+        fecha: l.fecha_cambio ?? l.fecha,
+        usuario: l.UsuarioAccion?.nombre ?? l.usuario ?? 'Sistema',
+        accion: l.accion ?? '',
+        detalle: l.detalle ?? '',
+        pedido_id: l.pedido_id,
+      }))
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const fetchCategories = createAsyncThunk(
+  'admin/fetchCategories',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get('/api/admin/categorias')
+      return (res.data || []).map((c) => ({
+        id: c.categoria_id,
+        nombre: c.nombre,
+      }))
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const createCategory = createAsyncThunk(
+  'admin/createCategory',
+  async (nombre, { rejectWithValue }) => {
+    try {
+      return await api.post('/api/admin/categorias', { nombre })
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const updateCategory = createAsyncThunk(
+  'admin/updateCategory',
+  async ({ id, nombre }, { rejectWithValue }) => {
+    try {
+      return await api.put(`/api/admin/categorias/${id}`, { nombre })
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const deleteCategory = createAsyncThunk(
+  'admin/deleteCategory',
+  async (id, { rejectWithValue }) => {
+    try {
+      await api.delete(`/api/admin/categorias/${id}`)
+      return id
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const fetchPendingPayouts = createAsyncThunk(
+  'admin/fetchPendingPayouts',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get('/api/admin/retiros/pendientes')
+      return (res.data || []).map((p) => ({
+        id: p.retiro_id ?? p.id,
+        vendedor: p.Vendedor?.nombre ?? p.vendedor ?? '—',
+        correo_paypal_destino: p.correo_paypal_destino,
+        monto: p.monto ?? 0,
+        estado: p.estado,
+        created_at: p.fecha_solicitud ?? p.created_at,
+      }))
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -60,105 +206,33 @@ export const approveWithdrawal = createAsyncThunk(
   'admin/approveWithdrawal',
   async ({ id, paypal_payout_batch_id }, { rejectWithValue }) => {
     try {
-      return await api.post(`/api/admin/retiros/${id}/aprobar`, { paypal_payout_batch_id })
+      const res = await api.post(`/api/admin/retiros/${id}/aprobar`, { paypal_payout_batch_id })
+      return res.data
     } catch (err) {
       return rejectWithValue(err.message)
     }
   }
 )
 
-const MOCK_USERS = [
-  { id: 1, nombre: 'Admin UTJ', email: 'admin@utj.edu.mx', rol_id: 1, verificado: true, suspendido: false, created_at: '2025-01-01T00:00:00Z' },
-  { id: 2, nombre: 'Jose Navarro', email: 'jose.navarro@utv.edu.mx', rol_id: 2, verificado: true, suspendido: false, created_at: '2026-01-15T10:00:00Z' },
-  { id: 3, nombre: 'Ana Garcia', email: 'ana.garcia@utv.edu.mx', rol_id: 2, verificado: true, suspendido: false, created_at: '2026-02-10T14:00:00Z' },
-  { id: 4, nombre: 'Luis Martinez', email: 'luis.martinez@utv.edu.mx', rol_id: 3, verificado: true, suspendido: false, created_at: '2026-02-20T09:00:00Z' },
-  { id: 5, nombre: 'Sofia Lopez', email: 'sofia.lopez@utv.edu.mx', rol_id: 3, verificado: true, suspendido: true, created_at: '2026-03-05T11:00:00Z' },
-  { id: 6, nombre: 'Carlos Ruiz', email: 'carlos.ruiz@utv.edu.mx', rol_id: 2, verificado: false, suspendido: false, created_at: '2026-03-15T16:00:00Z' },
-  { id: 7, nombre: 'Maria Hernandez', email: 'maria.hernandez@utv.edu.mx', rol_id: 3, verificado: true, suspendido: false, created_at: '2026-04-01T08:00:00Z' },
-  { id: 8, nombre: 'Pedro Sanchez', email: 'pedro.sanchez@utv.edu.mx', rol_id: 2, verificado: true, suspendido: false, created_at: '2026-04-10T12:00:00Z' },
-  { id: 9, nombre: 'Diana Torres', email: 'diana.torres@utv.edu.mx', rol_id: 3, verificado: false, suspendido: false, created_at: '2026-04-20T15:00:00Z' },
-  { id: 10, nombre: 'Roberto Diaz', email: 'roberto.diaz@utv.edu.mx', rol_id: 2, verificado: true, suspendido: true, created_at: '2026-05-01T10:00:00Z' },
-  { id: 11, nombre: 'Laura Flores', email: 'laura.flores@utv.edu.mx', rol_id: 3, verificado: true, suspendido: false, created_at: '2026-05-10T13:00:00Z' },
-  { id: 12, nombre: 'Jorge Cruz', email: 'jorge.cruz@utv.edu.mx', rol_id: 2, verificado: true, suspendido: false, created_at: '2026-05-20T09:00:00Z' },
-  { id: 13, nombre: 'Carmen Vega', email: 'carmen.vega@utv.edu.mx', rol_id: 3, verificado: true, suspendido: false, created_at: '2026-06-01T11:00:00Z' },
-  { id: 14, nombre: 'Miguel Angel', email: 'miguel.angel@utv.edu.mx', rol_id: 3, verificado: false, suspendido: false, created_at: '2026-06-05T14:00:00Z' },
-]
-
-const MOCK_DISPUTES = [
-  {
-    id: 1, pedido_id: 101, producto: { titulo: 'Laptop Lenovo Ideapad 5' },
-    comprador: { nombre: 'Ana Garcia', email: 'ana@utv.edu.mx' },
-    vendedor: { nombre: 'Jose Navarro', email: 'jose@utv.edu.mx' },
-    monto: 8500, estado: 'en_disputa', created_at: '2026-06-10T10:00:00Z',
-    historico: [
-      { fecha: '2026-06-01T10:00:00Z', accion: 'Pedido creado', usuario: 'Sistema' },
-      { fecha: '2026-06-02T14:00:00Z', accion: 'Pago recibido en Escrow', usuario: 'Sistema' },
-      { fecha: '2026-06-10T10:00:00Z', accion: 'Comprador abrio disputa: producto no coincide con descripcion', usuario: 'Ana Garcia', notas: 'La laptop tiene un golpe en la esquina que no se mencionaba en la publicacion' },
-    ],
-  },
-  {
-    id: 2, pedido_id: 102, producto: { titulo: 'Calculadora cientifica Casio' },
-    comprador: { nombre: 'Luis Martinez', email: 'luis@utv.edu.mx' },
-    vendedor: { nombre: 'Pedro Sanchez', email: 'pedro@utv.edu.mx' },
-    monto: 450, estado: 'en_disputa', created_at: '2026-06-12T15:00:00Z',
-    historico: [
-      { fecha: '2026-06-08T09:00:00Z', accion: 'Pedido creado', usuario: 'Sistema' },
-      { fecha: '2026-06-08T12:00:00Z', accion: 'Pago recibido en Escrow', usuario: 'Sistema' },
-      { fecha: '2026-06-12T15:00:00Z', accion: 'Comprador abrio disputa: no recibio el producto', usuario: 'Luis Martinez', notas: 'Ya pasaron 4 dias y el vendedor no ha entregado' },
-    ],
-  },
-  {
-    id: 3, pedido_id: 103, producto: { titulo: 'Mesa de estudio plegable' },
-    comprador: { nombre: 'Sofia Lopez', email: 'sofia@utv.edu.mx' },
-    vendedor: { nombre: 'Maria Hernandez', email: 'maria@utv.edu.mx' },
-    monto: 1200, estado: 'en_disputa', created_at: '2026-06-14T11:00:00Z',
-    historico: [
-      { fecha: '2026-06-10T16:00:00Z', accion: 'Pedido creado', usuario: 'Sistema' },
-      { fecha: '2026-06-10T17:00:00Z', accion: 'Pago recibido en Escrow', usuario: 'Sistema' },
-      { fecha: '2026-06-12T10:00:00Z', accion: 'Vendedor marco como entregado', usuario: 'Maria Hernandez' },
-      { fecha: '2026-06-14T11:00:00Z', accion: 'Comprador abrio disputa: token de entrega invalido', usuario: 'Sofia Lopez', notas: 'El codigo que me dio el vendedor no funciona en el sistema' },
-    ],
-  },
-]
-
-const MOCK_AUDIT_LOGS = [
-  { id: 1, fecha: '2026-06-15T09:00:00Z', usuario: 'Admin UTJ', accion: 'Usuario suspendido', detalle: 'Se suspendio a Sofia Lopez por reporte de fraude', pedido_id: null },
-  { id: 2, fecha: '2026-06-14T11:30:00Z', usuario: 'Sofia Lopez', accion: 'Disputa abierta', detalle: 'Disputa #103 - Token de entrega invalido para Mesa de estudio', pedido_id: 103 },
-  { id: 3, fecha: '2026-06-12T15:15:00Z', usuario: 'Luis Martinez', accion: 'Disputa abierta', detalle: 'Disputa #102 - Producto no recibido: Calculadora Casio', pedido_id: 102 },
-  { id: 4, fecha: '2026-06-10T10:05:00Z', usuario: 'Ana Garcia', accion: 'Disputa abierta', detalle: 'Disputa #101 - Producto danado: Laptop Lenovo', pedido_id: 101 },
-  { id: 5, fecha: '2026-06-09T14:00:00Z', usuario: 'Admin UTJ', accion: 'Pago autorizado', detalle: 'Retiro #3 aprobado por $800 MXN a jose.navarro@paypal.com', pedido_id: null },
-  { id: 6, fecha: '2026-06-08T12:00:00Z', usuario: 'Sistema', accion: 'Pago recibido', detalle: 'Pago de $450 MXN recibido en Escrow para pedido #102', pedido_id: 102 },
-  { id: 7, fecha: '2026-06-07T10:00:00Z', usuario: 'Admin UTJ', accion: 'Usuario verificado', detalle: 'Se verifico manualmente a Carlos Ruiz', pedido_id: null },
-  { id: 8, fecha: '2026-06-05T16:00:00Z', usuario: 'Admin UTJ', accion: 'Producto eliminado', detalle: 'Se elimino publicacion "Audifonos genericos" por contenido inapropiado', pedido_id: null },
-  { id: 9, fecha: '2026-06-04T09:00:00Z', usuario: 'Sistema', accion: 'Pago liberado', detalle: 'Fondos de $8,500 MXN liberados al vendedor para pedido #98', pedido_id: 98 },
-  { id: 10, fecha: '2026-06-03T11:00:00Z', usuario: 'Admin UTJ', accion: 'Rol actualizado', detalle: 'Se cambio rol de Jorge Cruz a Vendedor', pedido_id: null },
-  { id: 11, fecha: '2026-06-02T14:00:00Z', usuario: 'Sistema', accion: 'Pago recibido', detalle: 'Pago de $8,500 MXN recibido en Escrow para pedido #101', pedido_id: 101 },
-  { id: 12, fecha: '2026-06-01T10:00:00Z', usuario: 'Sistema', accion: 'Pedido creado', detalle: 'Pedido #101 creado por Ana Garcia: Laptop Lenovo Ideapad', pedido_id: 101 },
-  { id: 13, fecha: '2026-05-28T15:00:00Z', usuario: 'Admin UTJ', accion: 'Categoria creada', detalle: 'Se agrego categoria "Espacios" al catalogo', pedido_id: null },
-  { id: 14, fecha: '2026-05-20T10:00:00Z', usuario: 'Sistema', accion: 'Pago procesado', detalle: 'Payout batch #BATCH-12345 procesado: $3,500 MXN a jose.navarro@paypal.com', pedido_id: null },
-  { id: 15, fecha: '2026-05-15T09:00:00Z', usuario: 'Admin UTJ', accion: 'Disputa resuelta', detalle: 'Disputa #95 resuelta - Entregado completado. Fondos liberados al vendedor', pedido_id: 95 },
-]
-
-const MOCK_PENDING_PAYOUTS = [
-  { id: 3, correo_paypal_destino: 'jose.navarro@paypal.com', monto: 800, estado: 'pending', vendedor: 'Jose Navarro', created_at: '2026-06-08T10:00:00Z' },
-  { id: 5, correo_paypal_destino: 'ana.garcia@paypal.com', monto: 2500, estado: 'pending', vendedor: 'Ana Garcia', created_at: '2026-06-12T14:00:00Z' },
-  { id: 6, correo_paypal_destino: 'pedro.sanchez@paypal.com', monto: 1200, estado: 'pending', vendedor: 'Pedro Sanchez', created_at: '2026-06-14T09:00:00Z' },
-  { id: 7, correo_paypal_destino: 'jorge.cruz@paypal.com', monto: 3500, estado: 'pending', vendedor: 'Jorge Cruz', created_at: '2026-06-15T11:00:00Z' },
-]
-
 const adminSlice = createSlice({
   name: 'admin',
   initialState: {
-    users: MOCK_USERS,
-    disputes: MOCK_DISPUTES,
-    auditLogs: MOCK_AUDIT_LOGS,
-    pendingPayouts: MOCK_PENDING_PAYOUTS,
+    users: [],
+    disputes: [],
+    auditLogs: [],
+    pendingPayouts: [],
+    categories: [],
     metrics: {
-      total_usuarios: 14,
-      usuarios_verificados: 10,
-      transacciones_dia: 8,
-      dinero_escrow: 3400,
-      disputas_activas: 3,
+      ingresos_confirmados: 0,
+      fondos_en_escrow: 0,
+      pedidos_completados: 0,
+      ticket_promedio: 0,
+      total_usuarios: 0,
+      usuarios_verificados: 0,
+      disputas_activas: 0,
+      productos_publicados: 0,
+      desglose_estados: {},
+      top_productos: [],
     },
     loading: false,
     error: null,
@@ -167,25 +241,69 @@ const adminSlice = createSlice({
     clearAdminError(state) { state.error = null },
   },
   extraReducers: (builder) => {
+    const pending = (state) => { state.loading = true; state.error = null }
+    const rejected = (state, action) => { state.loading = false; state.error = action.payload }
+
     builder
+      .addCase(fetchAdminMetrics.pending, pending)
+      .addCase(fetchAdminMetrics.fulfilled, (state, action) => {
+        state.loading = false
+        state.metrics = action.payload
+      })
+      .addCase(fetchAdminMetrics.rejected, rejected)
+
+      .addCase(fetchUsers.pending, pending)
+      .addCase(fetchUsers.fulfilled, (state, action) => {
+        state.loading = false
+        state.users = action.payload
+      })
+      .addCase(fetchUsers.rejected, rejected)
+
+      .addCase(fetchDisputes.pending, pending)
+      .addCase(fetchDisputes.fulfilled, (state, action) => {
+        state.loading = false
+        state.disputes = action.payload
+      })
+      .addCase(fetchDisputes.rejected, rejected)
+
+      .addCase(fetchAuditLogs.pending, pending)
+      .addCase(fetchAuditLogs.fulfilled, (state, action) => {
+        state.loading = false
+        state.auditLogs = action.payload
+      })
+      .addCase(fetchAuditLogs.rejected, rejected)
+
+      .addCase(fetchCategories.pending, pending)
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.loading = false
+        state.categories = action.payload
+      })
+      .addCase(fetchCategories.rejected, rejected)
+
+      .addCase(fetchPendingPayouts.pending, pending)
+      .addCase(fetchPendingPayouts.fulfilled, (state, action) => {
+        state.loading = false
+        state.pendingPayouts = action.payload
+      })
+      .addCase(fetchPendingPayouts.rejected, rejected)
+
       .addCase(suspendUser.fulfilled, (state, action) => {
         const idx = state.users.findIndex((u) => u.id === action.payload.id)
-        if (idx !== -1) state.users[idx] = action.payload
+        if (idx !== -1) state.users[idx] = { ...state.users[idx], suspendido: !state.users[idx].suspendido }
       })
       .addCase(verifyUser.fulfilled, (state, action) => {
         const idx = state.users.findIndex((u) => u.id === action.payload.id)
-        if (idx !== -1) state.users[idx] = action.payload
+        if (idx !== -1) state.users[idx] = { ...state.users[idx], verificado: !state.users[idx].verificado }
       })
       .addCase(updateUserRole.fulfilled, (state, action) => {
         const idx = state.users.findIndex((u) => u.id === action.payload.id)
-        if (idx !== -1) state.users[idx] = action.payload
+        if (idx !== -1) state.users[idx] = { ...state.users[idx], rol_id: action.payload.rol_id }
       })
       .addCase(resolveDispute.fulfilled, (state, action) => {
-        const idx = state.disputes.findIndex((d) => d.id === action.payload.id)
-        if (idx !== -1) state.disputes[idx] = action.payload
+        state.disputes = state.disputes.filter((d) => d.id !== action.meta.arg.id)
       })
       .addCase(approveWithdrawal.fulfilled, (state, action) => {
-        state.pendingPayouts = state.pendingPayouts.filter((p) => p.id !== action.payload.id)
+        state.pendingPayouts = state.pendingPayouts.filter((p) => p.id !== action.meta.arg.id)
       })
   },
 })

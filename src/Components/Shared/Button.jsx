@@ -15,7 +15,7 @@ const sizes = {
 function Button({ children, variant = 'primary', size = 'md', className = '', disabled, loading, ...props }) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

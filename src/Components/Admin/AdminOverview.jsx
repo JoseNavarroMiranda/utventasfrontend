@@ -1,4 +1,9 @@
-import { useSelector } from 'react-redux'
+import { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchAdminMetrics } from '../../store/slices/adminSlice'
+import { fetchProducts } from '../../store/slices/productSlice'
+import { fetchSales } from '../../store/slices/saleSlice'
+import LoadingSpinner from '../Shared/LoadingSpinner'
 
 function MetricCard({ label, value, color }) {
   return (
@@ -10,11 +15,23 @@ function MetricCard({ label, value, color }) {
 }
 
 function AdminOverview() {
-  const { metrics } = useSelector((s) => s.admin)
-  const { items: sales } = useSelector((s) => s.sales)
-  const { items: products } = useSelector((s) => s.products)
+  const dispatch = useDispatch()
+  const { metrics, loading } = useSelector((s) => s.admin)
+  const { items: sales, loading: salesLoading } = useSelector((s) => s.sales)
+  const { items: products, loading: productsLoading } = useSelector((s) => s.products)
+
+  useEffect(() => {
+    dispatch(fetchAdminMetrics())
+    dispatch(fetchProducts())
+    dispatch(fetchSales())
+  }, [dispatch])
 
   const disputeCount = sales.filter((s) => s.estado === 'en_disputa').length
+  const isLoading = loading || salesLoading || productsLoading
+
+  if (isLoading && !metrics.total_usuarios) {
+    return <LoadingSpinner className="py-20" size="lg" />
+  }
 
   return (
     <div className="space-y-8">
@@ -25,9 +42,9 @@ function AdminOverview() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Usuarios Verificados" value={metrics.usuarios_verificados} color="border-l-4 border-l-cyan-400" />
-        <MetricCard label="Transacciones del Dia" value={metrics.transacciones_dia} color="border-l-4 border-l-emerald-400" />
-        <MetricCard label="Dinero en Escrow" value={`$${metrics.dinero_escrow.toLocaleString()} MXN`} color="border-l-4 border-l-blue-400" />
-        <MetricCard label="Disputas Activas" value={disputeCount || metrics.disputas_activas} color="border-l-4 border-l-red-400" />
+        <MetricCard label="Transacciones del Dia" value={metrics.pedidos_completados} color="border-l-4 border-l-emerald-400" />
+        <MetricCard label="Dinero en Escrow" value={`$${(metrics.fondos_en_escrow || 0).toLocaleString()} MXN`} color="border-l-4 border-l-blue-400" />
+        <MetricCard label="Disputas Activas" value={disputeCount || metrics.disputas_activas || 0} color="border-l-4 border-l-red-400" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -54,7 +71,7 @@ function AdminOverview() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Productos publicados</span>
-              <span className="font-medium text-white">{products.length}</span>
+              <span className="font-medium text-white">{products.length || metrics.productos_publicados || 0}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Ventas totales</span>
@@ -62,20 +79,20 @@ function AdminOverview() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Dinero en Escrow</span>
-              <span className="font-medium text-yellow-400">${metrics.dinero_escrow.toLocaleString()} MXN</span>
+              <span className="font-medium text-yellow-400">${(metrics.fondos_en_escrow || 0).toLocaleString()} MXN</span>
             </div>
           </div>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
           <h2 className="mb-4 text-lg font-bold text-white">Alertas</h2>
-          {disputeCount === 0 ? (
+          {disputeCount === 0 && metrics.disputas_activas === 0 ? (
             <p className="text-sm text-slate-500">Sin alertas activas</p>
           ) : (
             <div className="space-y-2">
               <div className="flex items-center gap-2 rounded-lg bg-red-400/10 px-3 py-2 text-sm text-red-300">
                 <span className="h-2 w-2 rounded-full bg-red-400" />
-                {disputeCount} disputa{disputeCount !== 1 ? 's' : ''} pendiente{disputeCount !== 1 ? 's' : ''} de resolver
+                {disputeCount || metrics.disputas_activas} disputa{(disputeCount || metrics.disputas_activas) !== 1 ? 's' : ''} pendiente{(disputeCount || metrics.disputas_activas) !== 1 ? 's' : ''} de resolver
               </div>
             </div>
           )}

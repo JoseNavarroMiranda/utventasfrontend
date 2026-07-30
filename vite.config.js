@@ -4,6 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  optimizeDeps: {
+    exclude: ['virtual:pwa-register/react'],
+  },
   server: {
     proxy: {
       '/api': {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router'
 import { createProduct, updateProduct, fetchProducts } from '../../store/slices/productSlice'
+import { api } from '../../services/api'
 import { CATEGORIES, CONTACT_METHODS } from '../../constants'
 import Button from '../Shared/Button'
 import Input from '../Shared/Input'
@@ -14,6 +15,7 @@ const INITIAL_STATE = {
   precio: '',
   categoria: '',
   contacto_metodo: '',
+  contacto_telefono: '',
   imagenes: [],
 }
 
@@ -24,6 +26,7 @@ function ProductForm() {
   const isEdit = Boolean(id)
 
   const { items: products, loading: productsLoading } = useSelector((s) => s.products)
+  const { user } = useSelector((s) => s.auth)
   const [form, setForm] = useState(INITIAL_STATE)
   const [previews, setPreviews] = useState([])
   const [submitting, setSubmitting] = useState(false)
@@ -43,6 +46,7 @@ function ProductForm() {
       precio: product.precio || '',
       categoria: product.categoria || '',
       contacto_metodo: product.contacto_metodo || '',
+      contacto_telefono: product.contacto_telefono || '',
       imagenes: [],
     })
     if (product.imagenes?.length) {
@@ -76,15 +80,14 @@ function ProductForm() {
 
   const removeImage = (idx) => {
     const target = previews[idx]
-    if (!target.existing) URL.revokeObjectURL(target.url)
+    if (!target.existing) {
+      URL.revokeObjectURL(target.url)
+      setForm((prev) => ({
+        ...prev,
+        imagenes: prev.imagenes.filter((f) => f !== target.file),
+      }))
+    }
     setPreviews((prev) => prev.filter((_, i) => i !== idx))
-    setForm((prev) => ({
-      ...prev,
-      imagenes: prev.imagenes.filter((_, i) => {
-        const pi = previews.filter((p) => !p.existing)
-        return pi.indexOf(target) !== i
-      }),
-    }))
   }
 
   const handleSubmit = async (e) => {
@@ -92,21 +95,44 @@ function ProductForm() {
     if (!validate()) return
 
     setSubmitting(true)
-    const payload = {
-      titulo: form.titulo.trim(),
-      descripcion: form.descripcion.trim(),
-      precio: Number(form.precio),
-      categoria: form.categoria,
-      contacto_metodo: form.contacto_metodo,
-    }
 
-    const result = isEdit
-      ? await dispatch(updateProduct({ id: Number(id), ...payload }))
-      : await dispatch(createProduct(payload))
+    try {
+      const uploadPromises = form.imagenes.map(async (file) => {
+        const fd = new FormData()
+        fd.append('imagen', file)
+        const res = await api.upload('/api/vendedor/subir-imagen', fd)
+        return res.url
+      })
+      const newUrls = await Promise.all(uploadPromises)
 
-    setSubmitting(false)
-    if (result.meta.requestStatus === 'fulfilled') {
-      navigate('/vendedor/publicaciones')
+      const existingUrls = previews.filter((p) => p.existing).map((p) => p.url)
+
+      const imagenes = [...existingUrls, ...newUrls].map((url, i) => ({
+        url,
+        es_principal: i === 0,
+      }))
+
+      const payload = {
+        titulo: form.titulo.trim(),
+        descripcion: form.descripcion.trim(),
+        precio: Number(form.precio),
+        categoria_nombre: form.categoria,
+        contacto_metodo: form.contacto_metodo,
+        contacto_telefono: form.contacto_telefono || user?.telefono_defecto || '',
+        imagenes,
+      }
+
+      const result = isEdit
+        ? await dispatch(updateProduct({ id: Number(id), ...payload }))
+        : await dispatch(createProduct(payload))
+
+      if (result.meta.requestStatus === 'fulfilled') {
+        navigate('/vendedor/publicaciones')
+      }
+    } catch {
+      setErrors((prev) => ({ ...prev, imagenes: 'Error al subir las imágenes' }))
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -141,7 +167,7 @@ function ProductForm() {
             placeholder="Describe tu producto, estado, motivo de venta..."
             value={form.descripcion}
             onChange={handleChange}
-            className={`w-full rounded-xl border bg-white px-4 py-3 text-slate-900 outline-none transition focus:ring-2 ${
+            className={`w-full rounded-xl border bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:ring-2 ${
               errors.descripcion
                 ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
                 : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-200'
@@ -173,15 +199,24 @@ function ProductForm() {
           />
         </div>
 
-        <Select
-          label="Método de contacto"
-          name="contacto_metodo"
-          options={CONTACT_METHODS}
-          placeholder="Seleccionar..."
-          value={form.contacto_metodo}
-          onChange={handleChange}
-          error={errors.contacto_metodo}
-        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input
+            label="Teléfono de contacto"
+            name="contacto_telefono"
+            placeholder="+52 555 123 4567"
+            value={form.contacto_telefono}
+            onChange={handleChange}
+          />
+          <Select
+            label="Método de contacto"
+            name="contacto_metodo"
+            options={CONTACT_METHODS}
+            placeholder="Seleccionar..."
+            value={form.contacto_metodo}
+            onChange={handleChange}
+            error={errors.contacto_metodo}
+          />
+        </div>
 
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-slate-100">Fotos del producto</span>

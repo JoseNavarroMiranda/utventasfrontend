@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router'
-import { fetchProducts } from '../../store/slices/productSlice'
+import { fetchActiveProducts } from '../../store/slices/productSlice'
 import PublicLayout from './components/PublicLayout'
 import HeroBanner from './components/HeroBanner'
 import CategoryGrid from './components/CategoryGrid'
@@ -17,7 +17,7 @@ function Home() {
   const categoryFilter = searchParams.get('categoria') || ''
 
   useEffect(() => {
-    dispatch(fetchProducts())
+    dispatch(fetchActiveProducts())
   }, [dispatch])
 
   const filtered = useMemo(() => {
@@ -81,7 +81,7 @@ function Home() {
               }}
             />
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
               {filtered.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

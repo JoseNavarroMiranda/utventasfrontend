@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { resolveDispute } from '../../store/slices/adminSlice'
+import { fetchDisputes, resolveDispute } from '../../store/slices/adminSlice'
 import { Table, Td } from '../Shared/Table'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
@@ -31,6 +31,10 @@ function DisputeResolution() {
   const dispatch = useDispatch()
   const { disputes } = useSelector((s) => s.admin)
   const [selected, setSelected] = useState(null)
+
+  useEffect(() => {
+    dispatch(fetchDisputes())
+  }, [dispatch])
   const [note, setNote] = useState('')
   const [noteRequired, setNoteRequired] = useState(false)
 

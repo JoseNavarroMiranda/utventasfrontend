@@ -67,7 +67,7 @@ function Login() {
                   placeholder="tu-correo@utv.edu.mx"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                   required
                 />
               </label>
@@ -79,7 +79,7 @@ function Login() {
                   placeholder="********"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                   required
                 />
               </label>
@@ -93,7 +93,7 @@ function Login() {
               </Button>
             </form>
 
-            <footer className="mt-6 flex items-center justify-between text-sm text-slate-200">
+            <footer className="mt-6 flex flex-col items-center gap-3 text-sm text-slate-200 sm:flex-row sm:justify-between">
               <Link className="font-medium text-indigo-300 hover:text-indigo-200" to="/recuperar-password">
                 ¿Olvidaste tu contraseña?
               </Link>

@@ -36,9 +36,9 @@ function CategoryGrid() {
             <a
               key={cat}
               href={`/?categoria=${encodeURIComponent(cat)}`}
-              className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-slate-900 p-5 transition hover:border-cyan-400/30 hover:bg-slate-800"
+              className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-slate-900 p-4 transition hover:border-cyan-400/30 hover:bg-slate-800 sm:p-5 sm:gap-3"
             >
-              <span className="text-cyan-300">{iconMap[cat]}</span>
+              <span className="text-cyan-300 [&>svg]:h-6 [&>svg]:w-6 sm:[&>svg]:h-8 sm:[&>svg]:w-8">{iconMap[cat]}</span>
               <span className="text-center text-xs font-medium text-slate-300">{cat}</span>
             </a>
           ))}

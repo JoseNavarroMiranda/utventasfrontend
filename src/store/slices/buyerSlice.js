@@ -5,7 +5,8 @@ export const fetchPurchases = createAsyncThunk(
   'buyer/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/api/comprador/mis-compras')
+      const res = await api.get('/api/comprador/mis-compras')
+      return res.compras ?? []
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -16,7 +17,8 @@ export const fetchPurchaseDetail = createAsyncThunk(
   'buyer/fetchDetail',
   async (id, { rejectWithValue }) => {
     try {
-      return await api.get(`/api/comprador/mis-compras/${id}`)
+      const res = await api.get(`/api/comprador/mis-compras/${id}`)
+      return res.compra
     } catch (err) {
       return rejectWithValue(err.message)
     }

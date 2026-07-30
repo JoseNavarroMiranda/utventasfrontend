@@ -53,7 +53,8 @@ export const fetchProfile = createAsyncThunk(
   'auth/profile',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/api/sesiones/perfil')
+      const res = await api.get('/api/sesiones/perfil')
+      return res.data
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -71,6 +72,9 @@ const authSlice = createSlice({
     },
     clearError(state) {
       state.error = null
+    },
+    updateUser(state, action) {
+      if (state.user) state.user = { ...state.user, ...action.payload }
     },
   },
   extraReducers: (builder) => {
@@ -110,5 +114,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { logout, clearError } = authSlice.actions
+export const { logout, clearError, updateUser } = authSlice.actions
 export default authSlice.reducer

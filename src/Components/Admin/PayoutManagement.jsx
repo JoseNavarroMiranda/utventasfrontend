@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { approveWithdrawal } from '../../store/slices/adminSlice'
+import { fetchPendingPayouts, approveWithdrawal } from '../../store/slices/adminSlice'
 import { Table, Td } from '../Shared/Table'
 import Button from '../Shared/Button'
 import Input from '../Shared/Input'
@@ -11,6 +11,10 @@ function PayoutManagement() {
   const { pendingPayouts } = useSelector((s) => s.admin)
   const { items: withdrawalHistory } = useSelector((s) => s.withdrawals)
   const [batchModal, setBatchModal] = useState(null)
+
+  useEffect(() => {
+    dispatch(fetchPendingPayouts())
+  }, [dispatch])
   const [batchId, setBatchId] = useState('')
   const [mode, setMode] = useState('single')
 

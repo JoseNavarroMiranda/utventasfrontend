@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router'
-import { fetchProducts } from '../../store/slices/productSlice'
+import { fetchActiveProducts } from '../../store/slices/productSlice'
 import PublicLayout from './components/PublicLayout'
 import ImageCarousel from './components/ImageCarousel'
 import LoadingSpinner from '../Shared/LoadingSpinner'
@@ -23,7 +23,7 @@ function ProductDetail() {
   const { items: products, loading, error } = useSelector((s) => s.products)
 
   useEffect(() => {
-    if (products.length === 0) dispatch(fetchProducts())
+    if (products.length === 0) dispatch(fetchActiveProducts())
   }, [dispatch, products.length])
 
   const product = products.find((p) => p.id === Number(id))
@@ -91,7 +91,7 @@ function ProductDetail() {
             <div className="rounded-2xl border border-white/10 bg-slate-900 p-5">
               <h3 className="text-sm font-semibold text-slate-400">Vendedor</h3>
               <p className="mt-2 text-sm font-medium text-white">
-                ID: {product.id_autor || '—'}
+                {product.autor_nombre || `ID: ${product.id_autor || '—'}`}
               </p>
               <p className="mt-1 text-xs text-slate-400">
                 Contacto vía {product.contacto_metodo || 'whatsapp'}

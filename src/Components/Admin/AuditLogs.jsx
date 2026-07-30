@@ -1,15 +1,23 @@
-import { useState, useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useState, useMemo, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchAuditLogs } from '../../store/slices/adminSlice'
 import Badge from '../Shared/Badge'
 import Input from '../Shared/Input'
+import LoadingSpinner from '../Shared/LoadingSpinner'
 
 function AuditLogs() {
-  const { auditLogs } = useSelector((s) => s.admin)
+  const dispatch = useDispatch()
+  const { auditLogs, loading } = useSelector((s) => s.admin)
+
+  useEffect(() => {
+    dispatch(fetchAuditLogs())
+  }, [dispatch])
+
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('')
 
   const actions = useMemo(() => {
-    const set = new Set(auditLogs.map((l) => l.accion))
+    const set = new Set(auditLogs.map((l) => l.accion).filter(Boolean))
     return [...set]
   }, [auditLogs])
 
@@ -19,15 +27,19 @@ function AuditLogs() {
       const q = search.toLowerCase()
       result = result.filter(
         (l) =>
-          l.usuario.toLowerCase().includes(q) ||
-          l.accion.toLowerCase().includes(q) ||
-          l.detalle.toLowerCase().includes(q)
+          (l.usuario || '').toLowerCase().includes(q) ||
+          (l.accion || '').toLowerCase().includes(q) ||
+          (l.detalle || '').toLowerCase().includes(q)
       )
     }
     if (filter) result = result.filter((l) => l.accion === filter)
     result.sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
     return result
   }, [auditLogs, search, filter])
+
+  if (loading && auditLogs.length === 0) {
+    return <LoadingSpinner className="py-20" size="lg" />
+  }
 
   return (
     <div className="space-y-6">
@@ -69,11 +81,11 @@ function AuditLogs() {
         ) : (
           filtered.map((log) => {
             const actionColor =
-              log.accion.includes('Disputa') || log.accion.includes('suspendido')
+              (log.accion || '').includes('Disputa') || (log.accion || '').includes('suspendido')
                 ? 'red'
-                : log.accion.includes('Pago') || log.accion.includes('liberado')
+                : (log.accion || '').includes('Pago') || (log.accion || '').includes('liberado')
                   ? 'emerald'
-                  : log.accion.includes('verificado') || log.accion.includes('Rol')
+                  : (log.accion || '').includes('verificado') || (log.accion || '').includes('Rol')
                     ? 'cyan'
                     : 'slate'
             return (
@@ -94,10 +106,12 @@ function AuditLogs() {
                   <div className="shrink-0 text-right">
                     <p className="text-sm font-medium text-slate-300">{log.usuario}</p>
                     <p className="text-xs text-slate-500">
-                      {new Date(log.fecha).toLocaleDateString('es-MX', {
-                        day: 'numeric', month: 'short', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit',
-                      })}
+                      {log.fecha
+                        ? new Date(log.fecha).toLocaleDateString('es-MX', {
+                            day: 'numeric', month: 'short', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit',
+                          })
+                        : '—'}
                     </p>
                   </div>
                 </div>

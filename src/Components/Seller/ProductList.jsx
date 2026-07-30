@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { fetchProducts, deleteProduct, toggleProductActive } from '../../store/slices/productSlice'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import EmptyState from '../Shared/EmptyState'
@@ -10,6 +10,7 @@ import Modal from '../Shared/Modal'
 
 function ProductList() {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { items: products, loading, error } = useSelector((s) => s.products)
   const [deleteTarget, setDeleteTarget] = useState(null)
 
@@ -36,7 +37,7 @@ function ProductList() {
         title="No tienes publicaciones"
         description="Crea tu primera publicación para empezar a vender en la universidad."
         actionLabel="Nueva Publicación"
-        onAction={() => window.location.href = '/vendedor/publicaciones/nueva'}
+        onAction={() => navigate('/vendedor/publicaciones/nueva')}
       />
     )
   }

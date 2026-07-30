@@ -1,11 +1,30 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { api } from '../../services/api'
 
+function normalizeProducts(data) {
+  if (!Array.isArray(data)) return []
+  return data.map(normalizeProduct)
+}
+
+function normalizeProduct(data) {
+  if (!data) return null
+  return {
+    ...data,
+    id: data.producto_id ?? data.id,
+    id_autor: data.usuario_id ?? data.id_autor,
+    autor_nombre: data.Usuario?.nombre ?? data.autor_nombre,
+    created_at: data.fecha_publicacion ?? data.created_at,
+    categoria: data.Categorium?.nombre ?? data.categoria,
+    imagenes: Array.isArray(data.ProductoImagens) ? data.ProductoImagens.map((img) => img.url_imagen) : data.imagenes || [],
+  }
+}
+
 export const fetchProducts = createAsyncThunk(
   'products/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/api/vendedor/mis-publicaciones')
+      const res = await api.get('/api/vendedor/mis-publicaciones')
+      return normalizeProducts(res.data)
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -50,7 +69,8 @@ export const fetchProductById = createAsyncThunk(
   'products/fetchById',
   async (id, { rejectWithValue }) => {
     try {
-      return await api.get(`/api/productos/${id}`)
+      const res = await api.get(`/api/productos/${id}`)
+      return normalizeProduct(res.data)
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -61,7 +81,8 @@ export const fetchActiveProducts = createAsyncThunk(
   'products/fetchActive',
   async (_, { rejectWithValue }) => {
     try {
-      return await api.get('/api/productos', { es_activo: true })
+      const res = await api.get('/api/productos', { es_activo: true })
+      return normalizeProducts(res.data)
     } catch (err) {
       return rejectWithValue(err.message)
     }

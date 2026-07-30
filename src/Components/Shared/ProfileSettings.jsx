@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { updateProfile } from '../../store/slices/buyerSlice'
 import { updateUser } from '../../store/slices/authSlice'
-import Button from '../Shared/Button'
-import Input from '../Shared/Input'
+import Button from './Button'
+import Input from './Input'
 
 function ProfileSettings() {
   const dispatch = useDispatch()

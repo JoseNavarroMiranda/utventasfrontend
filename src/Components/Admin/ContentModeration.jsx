@@ -1,42 +1,49 @@
-import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchCategories, createCategory, updateCategory, deleteCategory } from '../../store/slices/adminSlice'
+import { fetchProducts } from '../../store/slices/productSlice'
 import { Table, Td } from '../Shared/Table'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
 import Input from '../Shared/Input'
 import Modal from '../Shared/Modal'
-import { CATEGORIES } from '../../constants'
 
 function ContentModeration() {
+  const dispatch = useDispatch()
+  const { categories } = useSelector((s) => s.admin)
   const { items: products } = useSelector((s) => s.products)
-  const [categories, setCategories] = useState(CATEGORIES)
   const [catModal, setCatModal] = useState(null)
   const [catInput, setCatInput] = useState('')
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  const openEdit = (cat, idx) => {
-    setCatModal({ cat, idx })
-    setCatInput(cat)
+  useEffect(() => {
+    dispatch(fetchCategories())
+    dispatch(fetchProducts())
+  }, [dispatch])
+
+  const openEdit = (cat) => {
+    setCatModal({ id: cat.id, nombre: cat.nombre })
+    setCatInput(cat.nombre)
   }
 
   const openCreate = () => {
-    setCatModal({ cat: '', idx: null })
+    setCatModal({ id: null, nombre: '' })
     setCatInput('')
   }
 
   const saveCategory = () => {
     if (!catInput.trim()) return
-    if (catModal.idx !== null) {
-      setCategories((prev) => prev.map((c, i) => i === catModal.idx ? catInput.trim() : c))
+    if (catModal.id) {
+      dispatch(updateCategory({ id: catModal.id, nombre: catInput.trim() }))
     } else {
-      setCategories((prev) => [...prev, catInput.trim()])
+      dispatch(createCategory(catInput.trim()))
     }
     setCatModal(null)
   }
 
-  const deleteCategory = () => {
+  const handleDeleteCategory = () => {
     if (deleteTarget === null) return
-    setCategories((prev) => prev.filter((_, i) => i !== deleteTarget))
+    dispatch(deleteCategory(deleteTarget.id))
     setDeleteTarget(null)
   }
 
@@ -92,13 +99,13 @@ function ContentModeration() {
           ]}
         >
           {categories.map((cat, idx) => (
-            <tr key={idx} className="transition hover:bg-white/[0.02]">
+            <tr key={cat.id} className="transition hover:bg-white/[0.02]">
               <Td className="text-slate-500">{idx + 1}</Td>
-              <Td><span className="font-medium text-white">{cat}</span></Td>
+              <Td><span className="font-medium text-white">{cat.nombre}</span></Td>
               <Td right>
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => openEdit(cat, idx)}>Editar</Button>
-                  <Button variant="ghost" size="sm" className="text-red-400" onClick={() => setDeleteTarget(idx)}>Eliminar</Button>
+                  <Button variant="ghost" size="sm" onClick={() => openEdit(cat)}>Editar</Button>
+                  <Button variant="ghost" size="sm" className="text-red-400" onClick={() => setDeleteTarget(cat)}>Eliminar</Button>
                 </div>
               </Td>
             </tr>
@@ -106,7 +113,7 @@ function ContentModeration() {
         </Table>
       </div>
 
-      <Modal isOpen={!!catModal} onClose={() => setCatModal(null)} title={catModal?.idx !== null ? 'Editar Categoria' : 'Nueva Categoria'} size="sm">
+      <Modal isOpen={!!catModal} onClose={() => setCatModal(null)} title={catModal?.id ? 'Editar Categoria' : 'Nueva Categoria'} size="sm">
         <Input
           label="Nombre de la categoria"
           value={catInput}
@@ -115,17 +122,17 @@ function ContentModeration() {
         />
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="ghost" onClick={() => setCatModal(null)}>Cancelar</Button>
-          <Button onClick={saveCategory}>{catModal?.idx !== null ? 'Guardar' : 'Crear'}</Button>
+          <Button onClick={saveCategory}>{catModal?.id ? 'Guardar' : 'Crear'}</Button>
         </div>
       </Modal>
 
-      <Modal isOpen={deleteTarget !== null} onClose={() => setDeleteTarget(null)} title="Eliminar Categoria" size="sm">
+      <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Eliminar Categoria" size="sm">
         <p className="text-sm text-slate-300">
-          ¿Eliminar <strong className="text-white">{deleteTarget !== null ? categories[deleteTarget] : ''}</strong>? Los productos con esta categoria quedaran sin categoria asignada.
+          ¿Eliminar <strong className="text-white">{deleteTarget?.nombre}</strong>? Los productos con esta categoria quedaran sin categoria asignada.
         </p>
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="ghost" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
-          <Button variant="danger" onClick={deleteCategory}>Eliminar</Button>
+          <Button variant="danger" onClick={handleDeleteCategory}>Eliminar</Button>
         </div>
       </Modal>
     </div>

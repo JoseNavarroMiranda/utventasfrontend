@@ -132,7 +132,7 @@ function Register() {
                     placeholder="Tu nombre"
                     value={form.nombre}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                     required
                   />
                 </label>
@@ -145,7 +145,7 @@ function Register() {
                     placeholder="2123300393"
                     value={form.correo}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                     required
                   />
                   <span className="mt-1 text-xs text-slate-400">@soy.utj.edu.mx</span>
@@ -159,7 +159,7 @@ function Register() {
                     placeholder="Mínimo 6 caracteres"
                     value={form.password}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                     required
                   />
                 </label>
@@ -172,7 +172,7 @@ function Register() {
                     placeholder="Repite tu contraseña"
                     value={form.confirmPassword}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                     required
                   />
                 </label>
@@ -220,7 +220,7 @@ function Register() {
                     value={form.codigo}
                     onChange={handleChange}
                     maxLength={6}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-center text-2xl tracking-widest text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-center text-2xl tracking-widest text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                     required
                   />
                 </label>
