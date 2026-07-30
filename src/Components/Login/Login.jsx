@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { loginUser } from '../../store/slices/authSlice'
+import BackButton from '../Shared/BackButton'
 import BackgroundPage from '../Background/backgroundPage'
 import Button from '../Shared/Button'
 
@@ -54,6 +55,7 @@ function Login() {
 
         <div className="flex min-h-screen w-full items-center justify-center px-6 py-10 sm:px-10 lg:flex-1 lg:pl-16 lg:pr-12">
           <div className="w-full max-w-xl rounded-3xl px-8 py-12 backdrop-blur-md sm:px-12 sm:py-14 lg:min-h-[78vh] lg:py-16">
+            <BackButton to="/" />
             <header className="mb-8">
               <h1 className="mt-2 text-3xl font-bold text-white">Inicia sesión</h1>
             </header>

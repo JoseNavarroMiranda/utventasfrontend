@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router'
 import { sendVerificationCode, registerUser } from '../../store/slices/authSlice'
 import BackgroundPage from '../Background/backgroundPage'
 import Button from '../Shared/Button'
+import BackButton from '../Shared/BackButton'
 
 const ROLES = [
   { value: 'vendedor', label: 'Vendedor', desc: 'Quiero vender productos' },
@@ -105,6 +106,7 @@ function Register() {
 
         <div className="flex min-h-screen w-full items-center justify-center px-6 py-10 sm:px-10 lg:flex-1 lg:pl-16 lg:pr-12">
           <div className="w-full max-w-xl rounded-3xl px-8 py-12 backdrop-blur-md sm:px-12 sm:py-14">
+            <BackButton to="/" />
             <header className="mb-8">
               <h1 className="mt-2 text-3xl font-bold text-white">
                 {step === 'form' ? 'Crear cuenta' : 'Verificar código'}

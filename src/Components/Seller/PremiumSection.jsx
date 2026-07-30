@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router'
-import { fetchProducts } from '../../store/slices/productSlice'
+import { fetchProducts, promoteToPremium } from '../../store/slices/productSlice'
+import { api } from '../../services/api'
+import { API_BASE } from '../../constants'
 import Button from '../Shared/Button'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import Badge from '../Shared/Badge'
@@ -18,14 +20,76 @@ function PremiumSection() {
   const { id } = useParams()
   const { items: products, loading } = useSelector((s) => s.products)
   const [selectedPlan, setSelectedPlan] = useState(null)
-  const [processing, setProcessing] = useState(false)
+  const [showPayPal, setShowPayPal] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [clientId, setClientId] = useState(null)
+  const [paypalLoaded, setPaypalLoaded] = useState(false)
+  const [paypalError, setPaypalError] = useState('')
+  const containerRef = useRef(null)
+  const buttonsRendered = useRef(false)
+  const completed = useRef(false)
 
   const product = products.find((p) => p.id === Number(id))
 
   useEffect(() => {
     if (products.length === 0) dispatch(fetchProducts())
   }, [dispatch, products.length])
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/config/paypal`)
+      .then((r) => r.text())
+      .then((id) => setClientId(id.trim()))
+      .catch(() => setPaypalError('No se pudo cargar la configuracion de PayPal'))
+  }, [])
+
+  useEffect(() => {
+    if (!clientId || !showPayPal || !containerRef.current || buttonsRendered.current) return
+    buttonsRendered.current = true
+
+    const script = document.createElement('script')
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=MXN&intent=capture`
+    script.async = true
+    script.onload = () => {
+      if (!window.paypal || !containerRef.current) return
+      window.paypal.Buttons({
+        createOrder: async () => {
+          const res = await api.post('/api/vendedor/crear-orden-paypal', {
+            monto: selectedPlan.price,
+            descripcion: `Destacar "${product.titulo}" - Plan ${selectedPlan.days} días`
+          })
+          return res.id
+        },
+        onApprove: async (data) => {
+          if (completed.current) return
+          completed.current = true
+          await dispatch(promoteToPremium({ id: product.id, orderId: data.orderID, dias: selectedPlan.days }))
+          setSuccess(true)
+        },
+        onCancel: async () => {
+          if (completed.current) return
+          completed.current = true
+          await dispatch(promoteToPremium({ id: product.id, orderId: null, dias: selectedPlan.days }))
+          setSuccess(true)
+        },
+        onError: async () => {
+          if (completed.current) return
+          completed.current = true
+          await dispatch(promoteToPremium({ id: product.id, orderId: null, dias: selectedPlan.days }))
+          setSuccess(true)
+        },
+      }).render(containerRef.current)
+        .then(() => setPaypalLoaded(true))
+        .catch(() => setPaypalError('Error al renderizar PayPal'))
+    }
+    script.onerror = () => {
+      setPaypalError('No se pudo cargar el SDK de PayPal')
+    }
+    document.body.appendChild(script)
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script)
+      buttonsRendered.current = false
+    }
+  }, [clientId, showPayPal, selectedPlan, product, dispatch])
 
   if (loading && !product) return <LoadingSpinner className="py-20" size="lg" />
 
@@ -54,20 +118,18 @@ function PremiumSection() {
     )
   }
 
-  const handlePayment = async () => {
-    if (!selectedPlan) return
-    setProcessing(true)
-    await new Promise((r) => setTimeout(r, 1500))
-    setProcessing(false)
-    setSuccess(true)
-  }
-
   if (success) {
     return (
       <div className="py-20 text-center">
-        <h2 className="mt-4 text-2xl font-bold text-white">Pago Exitoso</h2>
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-400/10">
+          <svg className="h-8 w-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-white">Anuncio Destacado</h2>
         <p className="mt-2 text-slate-400">
-          <strong className="text-white">{product.titulo}</strong> ahora es un anuncio destacado.
+          <strong className="text-white">{product.titulo}</strong> ahora es un anuncio destacado
+          {selectedPlan && <span> por {selectedPlan.days} días</span>}.
         </p>
         <Button className="mt-6" onClick={() => navigate('/vendedor/publicaciones')}>
           Ver mis publicaciones
@@ -76,66 +138,108 @@ function PremiumSection() {
     )
   }
 
+  if (!showPayPal) {
+    return (
+      <div className="max-w-2xl">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white">Destacar Anuncio</h1>
+          <p className="mt-1 text-sm text-slate-400">
+            Aumenta la visibilidad de tu producto para vender más rápido.
+          </p>
+        </div>
+
+        <div className="mb-8 rounded-2xl border border-white/10 bg-slate-900 p-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-cyan-400/10 text-2xl">
+              {product.imagenes?.[0] ? (
+                <img src={product.imagenes[0]} alt="" className="h-full w-full rounded-xl object-cover" />
+              ) : null}
+            </div>
+            <div>
+              <h3 className="font-bold text-white">{product.titulo}</h3>
+              <p className="text-sm text-slate-400">
+                ${(product.precio || 0).toLocaleString()} MXN • {product.categoria || 'Sin categoría'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          {PREMIUM_PLANS.map((plan) => (
+            <button
+              key={plan.days}
+              type="button"
+              onClick={() => setSelectedPlan(plan)}
+              className={`rounded-2xl border p-5 text-left transition ${
+                selectedPlan?.days === plan.days
+                  ? 'border-cyan-400 bg-cyan-400/10'
+                  : 'border-white/10 bg-slate-900 hover:border-white/20'
+              }`}
+            >
+              <div className="mb-3">
+                <Badge color={selectedPlan?.days === plan.days ? 'cyan' : 'slate'}>
+                  {plan.label}
+                </Badge>
+              </div>
+              <p className="text-2xl font-bold text-white">${plan.price} MXN</p>
+              <p className="mt-1 text-xs text-slate-400">{plan.desc}</p>
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-8 flex items-center gap-3">
+          <Button onClick={() => setShowPayPal(true)} disabled={!selectedPlan}>
+            Pagar con PayPal ${selectedPlan?.price || 0} MXN
+          </Button>
+          <Button variant="ghost" onClick={() => navigate('/vendedor/publicaciones')}>
+            Cancelar
+          </Button>
+        </div>
+
+        <p className="mt-4 text-xs text-slate-500">
+          Al hacer clic en "Pagar" se abrirá PayPal para procesar el pago.
+          La transacción quedará registrada aunque el pago no se complete.
+        </p>
+      </div>
+    )
+  }
+
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Destacar Anuncio</h1>
+        <h1 className="text-2xl font-bold text-white">Completar pago</h1>
         <p className="mt-1 text-sm text-slate-400">
-          Aumenta la visibilidad de tu producto para vender más rápido.
+          Plan {selectedPlan?.label} — ${selectedPlan?.price} MXN
         </p>
       </div>
 
       <div className="mb-8 rounded-2xl border border-white/10 bg-slate-900 p-6">
         <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-cyan-400/10 text-2xl">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-400/10">
             {product.imagenes?.[0] ? (
-              <img src={product.imagenes[0]} alt="" className="h-full w-full rounded-xl object-cover" />
+              <img src={product.imagenes[0]} alt="" className="h-full w-full rounded-lg object-cover" />
             ) : null}
           </div>
           <div>
-            <h3 className="font-bold text-white">{product.titulo}</h3>
-            <p className="text-sm text-slate-400">
-              ${(product.precio || 0).toLocaleString()} MXN • {product.categoria || 'Sin categoría'}
-            </p>
+            <h3 className="font-semibold text-white">{product.titulo}</h3>
+            <Badge color="cyan">{selectedPlan?.label}</Badge>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {PREMIUM_PLANS.map((plan) => (
-          <button
-            key={plan.days}
-            type="button"
-            onClick={() => setSelectedPlan(plan)}
-            className={`rounded-2xl border p-5 text-left transition ${
-              selectedPlan?.days === plan.days
-                ? 'border-cyan-400 bg-cyan-400/10'
-                : 'border-white/10 bg-slate-900 hover:border-white/20'
-            }`}
-          >
-            <div className="mb-3">
-              <Badge color={selectedPlan?.days === plan.days ? 'cyan' : 'slate'}>
-                {plan.label}
-              </Badge>
-            </div>
-            <p className="text-2xl font-bold text-white">${plan.price} MXN</p>
-            <p className="mt-1 text-xs text-slate-400">{plan.desc}</p>
-          </button>
-        ))}
-      </div>
+      {paypalError && (
+        <div className="mb-4 rounded-xl bg-red-400/10 px-4 py-3 text-sm text-red-300">{paypalError}</div>
+      )}
 
-      <div className="mt-8 flex items-center gap-3">
-        <Button onClick={handlePayment} loading={processing} disabled={!selectedPlan}>
-          {processing ? 'Procesando...' : `Pagar $${selectedPlan?.price || 0} MXN`}
-        </Button>
-        <Button variant="ghost" onClick={() => navigate('/vendedor/publicaciones')}>
-          Cancelar
-        </Button>
-      </div>
+      <div ref={containerRef} className="min-h-[40px]" />
+      {!paypalLoaded && !paypalError && (
+        <div className="flex justify-center py-4">
+          <LoadingSpinner size="sm" />
+        </div>
+      )}
 
       <p className="mt-4 text-xs text-slate-500">
-        Al hacer clic en "Pagar" se realizará un cobro en tu método de pago registrado.
-        La transacción quedará registrada en <strong>transacciones_premium</strong>.
+        El anuncio se destacará aunque el pago no se complete. El pago es solo una contribución voluntaria.
       </p>
     </div>
   )

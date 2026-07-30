@@ -105,6 +105,18 @@ export const fetchOrderedProductIds = createAsyncThunk(
   }
 )
 
+export const promoteToPremium = createAsyncThunk(
+  'products/promoteToPremium',
+  async ({ id, orderId, dias }, { rejectWithValue }) => {
+    try {
+      const res = await api.put(`/api/vendedor/promover-premium/${id}`, { orderId, dias })
+      return { id, es_premium: res.data?.es_premium, premium_hasta: res.data?.premium_hasta }
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
 export const toggleProductActive = createAsyncThunk(
   'products/toggleActive',
   async ({ id, es_activo }, { rejectWithValue }) => {
@@ -190,6 +202,13 @@ const productSlice = createSlice({
       .addCase(toggleProductActive.fulfilled, (state, action) => {
         const idx = state.items.findIndex((p) => p.id === action.payload.id)
         if (idx !== -1) state.items[idx] = action.payload
+      })
+      .addCase(promoteToPremium.fulfilled, (state, action) => {
+        const idx = state.items.findIndex((p) => p.id === action.payload.id)
+        if (idx !== -1) {
+          state.items[idx].es_premium = action.payload.es_premium
+          state.items[idx].premium_hasta = action.payload.premium_hasta
+        }
       })
   },
 })

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Navigate, Route, Routes } from 'react-router'
 import { fetchProfile } from './store/slices/authSlice'
 import Login from './Components/Login/Login'
+import ForgotPassword from './Components/Login/ForgotPassword'
 import DashboardMain from './Components/Layout/Dashboard/DashboardMain'
 import SellerDashboard from './Components/Seller/SellerDashboard'
 import DashboardOverview from './Components/Seller/DashboardOverview'
@@ -67,6 +68,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
         <Route path="/verificar" element={<VerifyAccount />} />
+        <Route path="/recuperar-password" element={<ForgotPassword />} />
         <Route path="/productos/:id" element={<ProductDetail />} />
         <Route path="/privacidad" element={<Privacy />} />
         <Route path="/terminos" element={<Terms />} />

@@ -13,6 +13,7 @@ function ProductList() {
   const navigate = useNavigate()
   const { items: products, loading, error } = useSelector((s) => s.products)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [showInactive, setShowInactive] = useState(false)
 
   useEffect(() => {
     dispatch(fetchProducts())
@@ -28,6 +29,10 @@ function ProductList() {
     setDeleteTarget(null)
   }
 
+  const activeProducts = products.filter((p) => p.es_activo !== false)
+  const inactiveProducts = products.filter((p) => p.es_activo === false)
+  const displayedProducts = showInactive ? inactiveProducts : activeProducts
+
   if (loading) return <LoadingSpinner className="py-20" size="lg" />
   if (error) return <p className="py-20 text-center text-red-400">{error}</p>
 
@@ -42,18 +47,61 @@ function ProductList() {
     )
   }
 
+  if (activeProducts.length === 0 && !showInactive) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Mis Publicaciones</h1>
+            <p className="mt-1 text-sm text-slate-400">No tienes publicaciones activas</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {inactiveProducts.length > 0 && (
+              <button
+                onClick={() => setShowInactive(true)}
+                className="text-sm text-slate-400 hover:text-slate-200 transition"
+              >
+                Ver vendidas ({inactiveProducts.length})
+              </button>
+            )}
+            <Link to="/vendedor/publicaciones/nueva">
+              <Button>Nueva Publicación</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Mis Publicaciones</h1>
+          <h1 className="text-2xl font-bold text-white">
+            {showInactive ? 'Publicaciones Vendidas' : 'Mis Publicaciones'}
+          </h1>
           <p className="mt-1 text-sm text-slate-400">
-            {products.length} {products.length === 1 ? 'producto' : 'productos'} registrados
+            {showInactive
+              ? `${inactiveProducts.length} ${inactiveProducts.length === 1 ? 'producto' : 'productos'} vendidos`
+              : `${activeProducts.length} ${activeProducts.length === 1 ? 'producto' : 'productos'} activos`
+            }
           </p>
         </div>
-        <Link to="/vendedor/publicaciones/nueva">
-          <Button>Nueva Publicación</Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          {inactiveProducts.length > 0 && (
+            <button
+              onClick={() => setShowInactive(!showInactive)}
+              className="text-sm text-slate-400 hover:text-slate-200 transition"
+            >
+              {showInactive ? 'Ver activas' : `Ver vendidas (${inactiveProducts.length})`}
+            </button>
+          )}
+          {!showInactive && (
+            <Link to="/vendedor/publicaciones/nueva">
+              <Button>Nueva Publicación</Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-white/10">
@@ -69,7 +117,7 @@ function ProductList() {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {products.map((product) => (
+            {displayedProducts.map((product) => (
               <tr key={product.id} className="transition hover:bg-white/[0.02]">
                 <td className="px-4 py-3">
                   <p className="font-medium text-white">{product.titulo}</p>
@@ -82,17 +130,16 @@ function ProductList() {
                   ${(product.precio || 0).toLocaleString()} MXN
                 </td>
                 <td className="px-4 py-3">
-                  <button
-                    onClick={() => handleToggleActive(product)}
-                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold transition ${
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
                       product.es_activo !== false
-                        ? 'bg-emerald-400/15 text-emerald-200 hover:bg-emerald-400/25'
-                        : 'bg-red-400/15 text-red-200 hover:bg-red-400/25'
+                        ? 'bg-emerald-400/15 text-emerald-200'
+                        : 'bg-slate-500/15 text-slate-400'
                     }`}
                   >
-                    <span className={`h-1.5 w-1.5 rounded-full ${product.es_activo !== false ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                    {product.es_activo !== false ? 'Activo' : 'Pausado'}
-                  </button>
+                    <span className={`h-1.5 w-1.5 rounded-full ${product.es_activo !== false ? 'bg-emerald-400' : 'bg-slate-400'}`} />
+                    {product.es_activo !== false ? 'Activo' : 'Vendido'}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   {product.es_premium ? (
@@ -108,17 +155,11 @@ function ProductList() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
-                    <Link to={`/vendedor/publicaciones/${product.id}/editar`}>
-                      <Button variant="ghost" size="sm">Editar</Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDeleteTarget(product)}
-                      className="text-red-400 hover:text-red-300"
-                    >
-                      Eliminar
-                    </Button>
+                    {!showInactive && (
+                      <Link to={`/vendedor/publicaciones/${product.id}/editar`}>
+                        <Button variant="ghost" size="sm">Editar</Button>
+                      </Link>
+                    )}
                   </div>
                 </td>
               </tr>
