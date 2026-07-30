@@ -25,11 +25,21 @@ function ProductCard({ product }) {
             <p className="text-[10px] uppercase tracking-widest text-cyan-300 sm:text-xs">{product.categoria}</p>
             <h3 className="mt-0.5 text-sm font-bold text-white truncate sm:mt-1 sm:text-lg">{product.titulo}</h3>
           </div>
-          {product.es_premium && (
-            <span className="shrink-0 rounded-full bg-yellow-400/15 px-2 py-0.5 text-[10px] font-semibold text-yellow-200 sm:px-3 sm:py-1 sm:text-xs">
-              Destacado
-            </span>
-          )}
+          <div className="flex shrink-0 items-center gap-1">
+            {product.autor_verificado && (
+              <span className="inline-flex items-center rounded-full bg-emerald-400/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300 sm:px-2" title="Vendedor verificado">
+                <svg className="mr-0.5 h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+                </svg>
+                Verif.
+              </span>
+            )}
+            {product.es_premium && (
+              <span className="rounded-full bg-yellow-400/15 px-2 py-0.5 text-[10px] font-semibold text-yellow-200 sm:px-3 sm:py-1 sm:text-xs">
+                Destacado
+              </span>
+            )}
+          </div>
         </div>
 
         <p className="mt-2 line-clamp-1 text-xs leading-5 text-slate-400 sm:mt-3 sm:line-clamp-2 sm:text-sm sm:leading-6">{product.descripcion}</p>

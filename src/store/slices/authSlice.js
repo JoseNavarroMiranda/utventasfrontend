@@ -13,6 +13,7 @@ export const loginUser = createAsyncThunk(
         email: res.usuario.correo,
         rol: res.usuario.rol_nombre,
         telefono: res.usuario.telefono_defecto,
+        verificado_como_vendedor: res.usuario.verificado_como_vendedor,
       }
     } catch (err) {
       return rejectWithValue(err.message)
@@ -60,6 +61,7 @@ export const fetchProfile = createAsyncThunk(
         email: res.data?.correo,
         rol: res.data?.rol_nombre,
         telefono: res.data?.telefono_defecto,
+        verificado_como_vendedor: res.data?.verificado_como_vendedor,
       }
     } catch (err) {
       return rejectWithValue(err.message)

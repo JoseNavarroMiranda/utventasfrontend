@@ -1,12 +1,77 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSales, validateToken, clearSaleError } from '../../store/slices/saleSlice'
+import { createWithdrawal } from '../../store/slices/withdrawalSlice'
 import { ORDER_STATUS } from '../../constants'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import EmptyState from '../Shared/EmptyState'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
 import Modal from '../Shared/Modal'
+
+function WithdrawalModal({ sale, onClose }) {
+  const dispatch = useDispatch()
+  const [usuario, setUsuario] = useState('')
+  const [contrasena, setContrasena] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async () => {
+    if (!usuario.trim()) { setError('El usuario es obligatorio'); return }
+    if (!contrasena.trim()) { setError('La contraseña es obligatoria'); return }
+    setError('')
+    setLoading(true)
+    const result = await dispatch(createWithdrawal({ usuario: usuario.trim(), contrasena, pedido_id: sale.id }))
+    setLoading(false)
+    if (result.meta.requestStatus === 'fulfilled') {
+      onClose()
+    } else {
+      setError(result.payload || 'Error al solicitar retiro')
+    }
+  }
+
+  return (
+    <Modal isOpen onClose={onClose} title="Solicitar Retiro" size="sm">
+      <p className="mb-4 text-sm text-slate-300">
+        Retirar <strong className="text-white">${(sale.monto || 0).toLocaleString()} MXN</strong> de la venta:
+      </p>
+      <p className="mb-4 text-xs text-slate-500">
+        {sale.producto?.titulo || 'Producto'} — {sale.comprador?.nombre || 'Comprador'}
+      </p>
+
+      <div className="space-y-4">
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium text-slate-100">Usuario</span>
+          <input
+            type="text"
+            placeholder="Tu usuario"
+            value={usuario}
+            onChange={(e) => { setUsuario(e.target.value); setError('') }}
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+            autoFocus
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium text-slate-100">Contraseña</span>
+          <input
+            type="password"
+            placeholder="Tu contraseña"
+            value={contrasena}
+            onChange={(e) => { setContrasena(e.target.value); setError('') }}
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+          />
+        </label>
+      </div>
+
+      {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
+
+      <div className="mt-6 flex justify-end gap-3">
+        <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+        <Button onClick={handleSubmit} loading={loading}>Solicitar Retiro</Button>
+      </div>
+    </Modal>
+  )
+}
 
 function TokenModal({ sale, onClose }) {
   const dispatch = useDispatch()
@@ -57,7 +122,11 @@ function TokenModal({ sale, onClose }) {
 function SalesList() {
   const dispatch = useDispatch()
   const { items: sales, loading, error } = useSelector((s) => s.sales)
+  const { items: withdrawals } = useSelector((s) => s.withdrawals)
   const [tokenSale, setTokenSale] = useState(null)
+  const [withdrawalSale, setWithdrawalSale] = useState(null)
+
+  const hasWithdrawal = (saleId) => withdrawals.some((w) => w.pedido_id === saleId)
 
   useEffect(() => {
     dispatch(fetchSales())
@@ -124,7 +193,13 @@ function SalesList() {
                         Validar Token
                       </Button>
                     ) : sale.estado === 'delivered_completed' ? (
-                      <span className="text-xs text-emerald-400">Completado</span>
+                      hasWithdrawal(sale.id) ? (
+                        <span className="text-xs text-slate-500">Retirado</span>
+                      ) : (
+                        <Button size="sm" onClick={() => setWithdrawalSale(sale)}>
+                          Retirar
+                        </Button>
+                      )
                     ) : null}
                   </td>
                 </tr>
@@ -138,6 +213,13 @@ function SalesList() {
         <TokenModal
           sale={tokenSale}
           onClose={() => { setTokenSale(null); dispatch(clearSaleError()) }}
+        />
+      )}
+
+      {withdrawalSale && (
+        <WithdrawalModal
+          sale={withdrawalSale}
+          onClose={() => setWithdrawalSale(null)}
         />
       )}
     </div>

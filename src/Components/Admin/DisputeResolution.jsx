@@ -140,13 +140,13 @@ function DisputeResolution() {
               <div className="flex gap-3">
                 <Button
                   variant="danger"
-                  onClick={() => handleResolve('cancelado_reembolsado')}
+                  onClick={() => handleResolve('REEMBOLSO')}
                 >
                   Reembolsar al Comprador
                 </Button>
                 <Button
                   variant="primary"
-                  onClick={() => handleResolve('delivered_completed')}
+                  onClick={() => handleResolve('PAGO_VENDEDOR')}
                 >
                   Liberar al Vendedor
                 </Button>

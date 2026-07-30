@@ -10,6 +10,7 @@ import DashboardOverview from './Components/Seller/DashboardOverview'
 import ProductList from './Components/Seller/ProductList'
 import ProductForm from './Components/Seller/ProductForm'
 import PremiumSection from './Components/Seller/PremiumSection'
+import SellerVerification from './Components/Seller/SellerVerification'
 import SalesList from './Components/Seller/SalesList'
 import WithdrawalPanel from './Components/Seller/WithdrawalPanel'
 import StatisticsView from './Components/Seller/StatisticsView'
@@ -104,6 +105,7 @@ function App() {
           <Route path="publicaciones/nueva" element={<ProductForm />} />
           <Route path="publicaciones/:id/editar" element={<ProductForm />} />
           <Route path="publicaciones/:id/destacar" element={<PremiumSection />} />
+          <Route path="verificacion" element={<SellerVerification />} />
           <Route path="ventas" element={<SalesList />} />
           <Route path="retiros" element={<WithdrawalPanel />} />
           <Route path="estadisticas" element={<StatisticsView />} />

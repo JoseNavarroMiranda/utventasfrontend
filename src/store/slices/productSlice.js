@@ -17,6 +17,7 @@ function normalizeProduct(data) {
     autor_telefono: data.Usuario?.telefono_defecto ?? data.autor_telefono,
     created_at: data.fecha_publicacion ?? data.created_at,
     categoria: data.Categorium?.nombre ?? data.categoria,
+    autor_verificado: data.Usuario?.verificado_como_vendedor ?? false,
     contacto_telefono: data.contacto_telefono,
     contacto_metodo: data.contacto_metodo,
     imagenes: Array.isArray(data.ProductoImagens) ? data.ProductoImagens.map((img) => img.url_imagen) : data.imagenes || [],

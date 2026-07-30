@@ -1,19 +1,16 @@
-import { useState, useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import { WITHDRAWAL_STATUS, ORDER_STATUS } from '../../constants'
+import { useEffect, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchMyWithdrawals } from '../../store/slices/withdrawalSlice'
+import { WITHDRAWAL_STATUS } from '../../constants'
 import Badge from '../Shared/Badge'
-import Button from '../Shared/Button'
-import Input from '../Shared/Input'
 
 function WithdrawalPanel() {
+  const dispatch = useDispatch()
   const { items: sales } = useSelector((s) => s.sales)
-  const { items: withdrawals } = useSelector((s) => s.withdrawals)
-  const [paypalEmail, setPaypalEmail] = useState('')
-  const [amount, setAmount] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [formErrors, setFormErrors] = useState({})
-  const [localWithdrawals, setLocalWithdrawals] = useState(withdrawals)
-  const [success, setSuccess] = useState(false)
+  const { items: withdrawals, loading: wLoading, error: wError } = useSelector((s) => s.withdrawals)
+  useEffect(() => {
+    dispatch(fetchMyWithdrawals())
+  }, [dispatch])
 
   const completedSales = useMemo(
     () => sales.filter((s) => s.estado === 'delivered_completed'),
@@ -24,52 +21,14 @@ function WithdrawalPanel() {
     [completedSales]
   )
   const pendingWithdrawalTotal = useMemo(
-    () => localWithdrawals
+    () => withdrawals
       .filter((w) => w.estado === 'pending')
       .reduce((sum, w) => sum + (w.monto || 0), 0),
-    [localWithdrawals]
+    [withdrawals]
   )
   const availableBalance = completedTotal - pendingWithdrawalTotal
 
-  const validateForm = () => {
-    const errs = {}
-    if (!paypalEmail.trim()) errs.paypalEmail = 'El correo de PayPal es obligatorio'
-    else if (!/\S+@\S+\.\S+/.test(paypalEmail)) errs.paypalEmail = 'Correo electrónico inválido'
-
-    const num = Number(amount)
-    if (!amount || num <= 0) errs.amount = 'Ingresa un monto válido'
-    else if (num > availableBalance) errs.amount = `El monto máximo disponible es $${availableBalance.toLocaleString()} MXN`
-    else if (num < 10) errs.amount = 'El monto mínimo es $10 MXN'
-
-    setFormErrors(errs)
-    return Object.keys(errs).length === 0
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!validateForm()) return
-
-    setSubmitting(true)
-    setSuccess(false)
-
-    await new Promise((r) => setTimeout(r, 800))
-
-    const newWithdrawal = {
-      id: Date.now(),
-      correo_paypal_destino: paypalEmail.trim(),
-      monto: Number(amount),
-      estado: 'pending',
-      created_at: new Date().toISOString(),
-    }
-
-    setLocalWithdrawals((prev) => [newWithdrawal, ...prev])
-    setPaypalEmail('')
-    setAmount('')
-    setSubmitting(false)
-    setSuccess(true)
-  }
-
-  const pendingTotal = localWithdrawals
+  const pendingTotal = withdrawals
     .filter((w) => w.estado === 'pending')
     .reduce((sum, w) => sum + (w.monto || 0), 0)
 
@@ -99,7 +58,7 @@ function WithdrawalPanel() {
         <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
           <p className="text-sm text-slate-400">Total Retirado</p>
           <p className="mt-2 text-3xl font-bold text-white">
-            ${localWithdrawals
+            ${withdrawals
               .filter((w) => w.estado === 'processed_payout')
               .reduce((sum, w) => sum + (w.monto || 0), 0)
               .toLocaleString()} <span className="text-base text-slate-500">MXN</span>
@@ -107,54 +66,8 @@ function WithdrawalPanel() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-5">
-        <div className="rounded-2xl border border-white/10 bg-slate-900 p-6 lg:col-span-2">
-          <h2 className="mb-4 text-lg font-bold text-white">Solicitar Retiro</h2>
-
-          {success && (
-            <div className="mb-4 rounded-xl bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">
-              Retiro solicitado correctamente
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              label="Correo PayPal destino"
-              type="email"
-              placeholder="micuenta@paypal.com"
-              value={paypalEmail}
-              onChange={(e) => { setPaypalEmail(e.target.value); setFormErrors({}) }}
-              error={formErrors.paypalEmail}
-            />
-
-            <Input
-              label="Monto a retirar (MXN)"
-              type="number"
-              min={10}
-              max={availableBalance}
-              placeholder={`Máx. $${(availableBalance || 0).toLocaleString()}`}
-              value={amount}
-              onChange={(e) => { setAmount(e.target.value); setFormErrors({}) }}
-              error={formErrors.amount}
-            />
-
-            <Button
-              type="submit"
-              loading={submitting}
-              disabled={!availableBalance || availableBalance <= 0}
-              className="w-full"
-            >
-              Solicitar Transferencia
-            </Button>
-          </form>
-
-          <p className="mt-4 text-xs text-slate-500">
-            Los retiros se procesan en un plazo de 1-3 días hábiles.
-            El estado cambiará de <strong>pendiente</strong> a <strong>procesado_payout</strong>.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-slate-900 p-6 lg:col-span-3">
+      <div className="grid gap-6 lg:grid-cols-1">
+        <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
           <h2 className="mb-4 text-lg font-bold text-white">Historial de Retiros</h2>
 
           {completedSales.length > 0 && (
@@ -181,18 +94,24 @@ function WithdrawalPanel() {
             </div>
           )}
 
-          {localWithdrawals.length === 0 ? (
+          {wLoading && <p className="py-4 text-center text-sm text-slate-500">Cargando retiros...</p>}
+
+          {wError && (
+            <div className="mb-4 rounded-xl bg-red-400/10 px-4 py-3 text-sm text-red-300">{wError}</div>
+          )}
+
+          {!wLoading && withdrawals.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">No has solicitado retiros aún</p>
           ) : (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-slate-400">Solicitudes de Retiro</h3>
-              {localWithdrawals.map((w) => {
+              {withdrawals.map((w) => {
                 const status = WITHDRAWAL_STATUS[w.estado] || {}
                 return (
                   <div key={w.id} className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
                     <div>
                       <p className="text-sm font-medium text-white">${(w.monto || 0).toLocaleString()} MXN</p>
-                      <p className="text-xs text-slate-400">{w.correo_paypal_destino}</p>
+                      <p className="text-xs text-slate-400">Usuario: {w.usuario_destino || '—'}</p>
                       {w.created_at && (
                         <p className="text-xs text-slate-500">
                           {new Date(w.created_at).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}

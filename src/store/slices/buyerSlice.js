@@ -54,9 +54,10 @@ export const fetchPurchaseDetail = createAsyncThunk(
 
 export const openDispute = createAsyncThunk(
   'buyer/openDispute',
-  async ({ purchaseId, motivo, descripcion: _descripcion }, { rejectWithValue }) => {
+  async ({ purchaseId, motivo, descripcion }, { rejectWithValue }) => {
     try {
-      return await api.post('/api/comprador/disputas', { pedido_id: purchaseId, motivo })
+      const res = await api.post('/api/comprador/disputas', { pedido_id: purchaseId, motivo, descripcion })
+      return { ...res.disputa, id: res.disputa.disputa_id }
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -133,10 +134,10 @@ const buyerSlice = createSlice({
         state.error = action.payload
       })
       .addCase(openDispute.fulfilled, (state, action) => {
-        const idx = state.purchases.findIndex((p) => p.id === action.payload.id)
-        if (idx !== -1) state.purchases[idx] = action.payload
-        if (state.currentPurchase?.id === action.payload.id) {
-          state.currentPurchase = action.payload
+        const idx = state.purchases.findIndex((p) => p.id === action.meta.arg.purchaseId)
+        if (idx !== -1) state.purchases[idx].estado = 'en_disputa'
+        if (state.currentPurchase?.id === action.meta.arg.purchaseId) {
+          state.currentPurchase.estado = 'en_disputa'
         }
       })
   },

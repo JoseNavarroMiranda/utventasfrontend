@@ -60,6 +60,7 @@ export const COMPRADOR_NAV_ITEMS = [
 
 export const NAV_ITEMS = [
   { path: '/vendedor/dashboard', label: 'Dashboard' },
+  { path: '/vendedor/verificacion', label: 'Verificación' },
   { path: '/vendedor/publicaciones', label: 'Mis Publicaciones' },
   { path: '/vendedor/publicaciones/nueva', label: 'Nueva Publicación' },
   { path: '/vendedor/ventas', label: 'Mis Ventas' },

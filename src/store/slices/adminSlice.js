@@ -52,13 +52,13 @@ export const fetchDisputes = createAsyncThunk(
       return (res.data || []).map((d) => ({
         id: d.disputa_id ?? d.id,
         pedido_id: d.pedido_id,
-        producto: d.Producto ? { titulo: d.Producto.titulo } : (d.producto || { titulo: '—' }),
+        producto: d.Pedido?.Producto ? { titulo: d.Pedido.Producto.titulo } : (d.producto || { titulo: '—' }),
         comprador: d.Comprador ? { nombre: d.Comprador.nombre, email: d.Comprador.correo } : (d.comprador || { nombre: '—' }),
         vendedor: d.Vendedor ? { nombre: d.Vendedor.nombre, email: d.Vendedor.correo } : (d.vendedor || { nombre: '—' }),
         monto: d.monto ?? d.Pedido?.precio_final ?? 0,
         estado: d.estado,
         created_at: d.fecha_creacion ?? d.created_at,
-        historico: d.HistoricoPedidos?.map((h) => ({
+        historico: d.Pedido?.HistoricoPedidos?.map((h) => ({
           fecha: h.fecha_cambio,
           accion: h.accion,
           usuario: h.UsuarioAccion?.nombre || h.usuario_accion_id || 'Sistema',

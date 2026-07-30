@@ -147,8 +147,16 @@ function ProductDetail() {
 
             <div className="rounded-2xl border border-white/10 bg-slate-900 p-5">
               <h3 className="text-sm font-semibold text-slate-400">Vendedor</h3>
-              <p className="mt-2 text-sm font-medium text-white">
+              <p className="mt-2 flex items-center gap-2 text-sm font-medium text-white">
                 {product.autor_nombre || `ID: ${product.id_autor || '—'}`}
+                {product.autor_verificado && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
+                    </svg>
+                    Verificado
+                  </span>
+                )}
               </p>
               {product.contacto_telefono && (
                 <p className="mt-1 text-xs text-slate-400">

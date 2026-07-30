@@ -21,7 +21,7 @@ function DisputePanel() {
     dispatch(fetchPurchases())
   }, [dispatch])
 
-  const disputable = purchases.filter((p) => ['pending', 'paid_escrow'].includes(p.estado))
+  const disputable = purchases.filter((p) => p.estado === 'paid_escrow')
 
   const handleSubmit = async ({ motivo, descripcion }) => {
     setSubmitting(true)
