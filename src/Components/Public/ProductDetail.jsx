@@ -1,12 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useParams, Link } from 'react-router'
-import { fetchActiveProducts } from '../../store/slices/productSlice'
+import { useParams, Link, useNavigate } from 'react-router'
+import { fetchActiveProducts, fetchOrderedProductIds, markProductAsOrdered } from '../../store/slices/productSlice'
 import PublicLayout from './components/PublicLayout'
 import ImageCarousel from './components/ImageCarousel'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import Button from '../Shared/Button'
 import Badge from '../Shared/Badge'
+import Modal from '../Shared/Modal'
+import PayPalButton from './components/PayPalButton'
 
 function DetailRow({ label, value }) {
   return (
@@ -20,16 +22,43 @@ function DetailRow({ label, value }) {
 function ProductDetail() {
   const { id } = useParams()
   const dispatch = useDispatch()
-  const { items: products, loading, error } = useSelector((s) => s.products)
+  const navigate = useNavigate()
+  const { user } = useSelector((s) => s.auth)
+  const { items: products, orderedProductIds, loading, error } = useSelector((s) => s.products)
+  const [buyError, setBuyError] = useState('')
+  const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showPayPal, setShowPayPal] = useState(false)
+  const [purchaseComplete, setPurchaseComplete] = useState(false)
 
   useEffect(() => {
     if (products.length === 0) dispatch(fetchActiveProducts())
+    dispatch(fetchOrderedProductIds())
   }, [dispatch, products.length])
 
-  const product = products.find((p) => p.id === Number(id))
+  const productId = Number(id)
+  const product = products.find((p) => p.id === productId)
 
-  if (loading) return <PublicLayout><LoadingSpinner className="py-20" size="lg" /></PublicLayout>
-  if (error) return <PublicLayout><p className="py-20 text-center text-red-400">{error}</p></PublicLayout>
+  const isOrdered = orderedProductIds.includes(productId)
+
+  const handleBuy = () => {
+    if (!user) {
+      setShowLoginModal(true)
+      return
+    }
+    if (user.rol !== 'Comprador') {
+      setBuyError('Solo los usuarios con rol de Comprador pueden realizar compras')
+      return
+    }
+    if (isOrdered) {
+      setBuyError('Este producto ya no está disponible')
+      return
+    }
+    setShowPayPal(true)
+    setBuyError('')
+  }
+
+  if (loading && products.length === 0) return <PublicLayout><LoadingSpinner className="py-20" size="lg" /></PublicLayout>
+  if (!product && error) return <PublicLayout><p className="py-20 text-center text-red-400">{error}</p></PublicLayout>
   if (!product) return <PublicLayout><p className="py-20 text-center text-slate-400">Producto no encontrado</p></PublicLayout>
 
   return (
@@ -80,19 +109,57 @@ function ProductDetail() {
               </div>
             </div>
 
-            <Button className="w-full" size="lg">
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M7.076 21.337A2.47 2.47 0 015.5 19.5V7.5h13v12a2.47 2.47 0 01-1.576 1.837l-1.384.553a5.465 5.465 0 01-4.08 0l-1.384-.553z" />
-                <path d="M3 4.5h18v2H3z" />
-              </svg>
-              Comprar / Reservar con PayPal
-            </Button>
+            {buyError && (
+              <p className="rounded-xl bg-red-400/10 px-4 py-3 text-sm text-red-300">{buyError}</p>
+            )}
+
+            {purchaseComplete ? (
+              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-400/10 p-5 text-center">
+                <p className="text-lg font-semibold text-emerald-300">Compra realizada con exito</p>
+                <p className="mt-1 text-sm text-emerald-400/80">
+                  Revisa el estado en <Link to="/comprador/compras" className="underline">Mis Compras</Link>
+                </p>
+              </div>
+            ) : isOrdered ? (
+              <div className="rounded-2xl border border-red-500/30 bg-red-400/10 p-5 text-center">
+                <p className="text-lg font-semibold text-red-300">Producto no disponible</p>
+                <p className="mt-1 text-sm text-red-400/80">
+                  Este producto ya esta en proceso de compra
+                </p>
+              </div>
+            ) : showPayPal ? (
+              <div className="rounded-2xl border border-white/10 bg-slate-900 p-5">
+                <h3 className="mb-4 text-sm font-semibold text-slate-400">Paga con PayPal</h3>
+                <PayPalButton
+                  productId={Number(id)}
+                  onComplete={() => setPurchaseComplete(true)}
+                />
+              </div>
+            ) : (
+              <Button className="w-full" size="lg" onClick={handleBuy}>
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7.076 21.337A2.47 2.47 0 015.5 19.5V7.5h13v12a2.47 2.47 0 01-1.576 1.837l-1.384.553a5.465 5.465 0 01-4.08 0l-1.384-.553z" />
+                  <path d="M3 4.5h18v2H3z" />
+                </svg>
+                Comprar / Reservar con PayPal
+              </Button>
+            )}
 
             <div className="rounded-2xl border border-white/10 bg-slate-900 p-5">
               <h3 className="text-sm font-semibold text-slate-400">Vendedor</h3>
               <p className="mt-2 text-sm font-medium text-white">
                 {product.autor_nombre || `ID: ${product.id_autor || '—'}`}
               </p>
+              {product.contacto_telefono && (
+                <p className="mt-1 text-xs text-slate-400">
+                  Teléfono: <span className="text-slate-300">{product.contacto_telefono}</span>
+                </p>
+              )}
+              {product.autor_correo && (
+                <p className="mt-1 text-xs text-slate-400">
+                  Correo: <span className="text-slate-300">{product.autor_correo}</span>
+                </p>
+              )}
               <p className="mt-1 text-xs text-slate-400">
                 Contacto vía {product.contacto_metodo || 'whatsapp'}
               </p>
@@ -100,6 +167,15 @@ function ProductDetail() {
           </div>
         </div>
       </div>
+      <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} title="Inicia sesión" size="sm">
+        <p className="text-sm text-slate-300">
+          Necesitas iniciar sesión como Comprador para poder comprar este producto.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button variant="ghost" onClick={() => setShowLoginModal(false)}>Cancelar</Button>
+          <Button onClick={() => navigate(`/login?redirect=/productos/${id}`)}>Iniciar Sesión</Button>
+        </div>
+      </Modal>
     </PublicLayout>
   )
 }

@@ -39,8 +39,8 @@ function DashboardOverview() {
     return result
   }, [purchases, search, category])
 
-  const activeCount = purchases.filter((p) => p.estado === 'pending' || p.estado === 'paid_escrow').length
-  const completedCount = purchases.filter((p) => p.estado === 'delivered_completed').length
+  const activeCount = purchases.filter((p) => p.estado === 'pending' || p.estado === 'pendiente_pago' || p.estado === 'paid_escrow' || p.estado === 'pagado_escrow').length
+  const completedCount = purchases.filter((p) => p.estado === 'delivered_completed' || p.estado === 'entregado_completado').length
   const escrowTotal = purchases
     .filter((p) => p.estado === 'paid_escrow')
     .reduce((sum, p) => sum + (p.monto || 0), 0)

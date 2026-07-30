@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { fetchProducts } from '../../store/slices/productSlice'
@@ -20,14 +20,14 @@ function DashboardOverview() {
   const dispatch = useDispatch()
   const { items: products, loading: productsLoading } = useSelector((s) => s.products)
   const { items: sales, loading: salesLoading } = useSelector((s) => s.sales)
-  const { balance, loading: wLoading } = useSelector((s) => s.withdrawals)
+  const { items: withdrawals } = useSelector((s) => s.withdrawals)
 
   useEffect(() => {
     dispatch(fetchProducts())
     dispatch(fetchSales())
   }, [dispatch])
 
-  const loading = productsLoading || salesLoading || wLoading
+  const loading = productsLoading || salesLoading
 
   const activeProducts = products.filter((p) => p.es_activo !== false).length
   const monthSales = sales.filter((s) => {
@@ -37,6 +37,23 @@ function DashboardOverview() {
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
   }).length
   const pendingTokenSales = sales.filter((s) => s.estado === 'paid_escrow').length
+  const escrowTotal = sales
+    .filter((s) => s.estado === 'paid_escrow')
+    .reduce((sum, s) => sum + (s.monto || 0), 0)
+
+  const completedTotal = useMemo(
+    () => sales
+      .filter((s) => s.estado === 'delivered_completed')
+      .reduce((sum, s) => sum + (s.monto || 0), 0),
+    [sales]
+  )
+  const pendingWithdrawals = useMemo(
+    () => withdrawals
+      .filter((w) => w.estado === 'pending')
+      .reduce((sum, w) => sum + (w.monto || 0), 0),
+    [withdrawals]
+  )
+  const availableBalance = completedTotal - pendingWithdrawals
 
   if (loading) return <LoadingSpinner className="py-20" size="lg" />
 
@@ -47,9 +64,10 @@ function DashboardOverview() {
         <p className="mt-1 text-sm text-slate-400">Resumen de tu actividad comercial</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
         <StatCard label="Ventas del Mes" value={monthSales} color="border-l-4 border-l-cyan-400" />
-        <StatCard label="Saldo Disponible" value={`$${(balance || 0).toLocaleString()} MXN`} color="border-l-4 border-l-emerald-400" />
+        <StatCard label="Monto en Escrow" value={`$${escrowTotal.toLocaleString()} MXN`} color="border-l-4 border-l-amber-400" />
+        <StatCard label="Saldo Disponible" value={`$${(availableBalance || 0).toLocaleString()} MXN`} color="border-l-4 border-l-emerald-400" />
         <StatCard label="Publicaciones Activas" value={activeProducts} color="border-l-4 border-l-blue-400" />
         <StatCard label="Pendientes de Token" value={pendingTokenSales} color="border-l-4 border-l-yellow-400" />
       </div>

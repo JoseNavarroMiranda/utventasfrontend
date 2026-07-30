@@ -7,8 +7,8 @@ import PurchaseTabs from './components/PurchaseTabs'
 import PurchaseFilters from './components/PurchaseFilters'
 import PurchaseCard from './components/PurchaseCard'
 
-const ACTIVE_STATES = ['pending', 'paid_escrow']
-const HISTORY_STATES = ['delivered_completed', 'cancelled', 'cancelado_reembolsado', 'en_disputa']
+const ACTIVE_STATES = ['pending', 'pendiente_pago', 'paid_escrow', 'pagado_escrow']
+const HISTORY_STATES = ['delivered_completed', 'entregado_completado', 'cancelled', 'cancelado_reembolsado', 'en_disputa']
 
 function PurchaseList() {
   const dispatch = useDispatch()

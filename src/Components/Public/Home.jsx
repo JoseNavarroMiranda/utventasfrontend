@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router'
-import { fetchActiveProducts } from '../../store/slices/productSlice'
+import { fetchActiveProducts, fetchOrderedProductIds } from '../../store/slices/productSlice'
 import PublicLayout from './components/PublicLayout'
 import HeroBanner from './components/HeroBanner'
 import CategoryGrid from './components/CategoryGrid'
@@ -11,17 +11,18 @@ import EmptyState from '../Shared/EmptyState'
 
 function Home() {
   const dispatch = useDispatch()
-  const { items: products, loading } = useSelector((s) => s.products)
+  const { items: products, orderedProductIds, loading } = useSelector((s) => s.products)
   const [search, setSearch] = useState('')
   const [searchParams] = useSearchParams()
   const categoryFilter = searchParams.get('categoria') || ''
 
   useEffect(() => {
     dispatch(fetchActiveProducts())
+    dispatch(fetchOrderedProductIds())
   }, [dispatch])
 
   const filtered = useMemo(() => {
-    let result = products.filter((p) => p.es_activo !== false)
+    let result = products.filter((p) => p.es_activo !== false && !orderedProductIds.includes(p.id))
 
     if (categoryFilter) {
       result = result.filter((p) => p.categoria === categoryFilter)

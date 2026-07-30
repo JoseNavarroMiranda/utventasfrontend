@@ -1,6 +1,6 @@
 function EscrowStatus({ estado, monto }) {
-  const isPaid = estado === 'paid_escrow'
-  const isPending = estado === 'pending'
+  const isPaid = estado === 'paid_escrow' || estado === 'pagado_escrow'
+  const isPending = estado === 'pending' || estado === 'pendiente_pago'
 
   return (
     <div className={`rounded-xl border p-4 ${

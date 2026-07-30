@@ -54,7 +54,13 @@ export const fetchProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get('/api/sesiones/perfil')
-      return res.data
+      return {
+        id: res.data?.usuario_id,
+        nombre: res.data?.nombre,
+        email: res.data?.correo,
+        rol: res.data?.rol_nombre,
+        telefono: res.data?.telefono_defecto,
+      }
     } catch (err) {
       return rejectWithValue(err.message)
     }

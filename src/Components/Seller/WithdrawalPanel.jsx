@@ -1,19 +1,35 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { WITHDRAWAL_STATUS } from '../../constants'
+import { WITHDRAWAL_STATUS, ORDER_STATUS } from '../../constants'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
 import Input from '../Shared/Input'
 
 function WithdrawalPanel() {
-  const { items: withdrawals, balance } = useSelector((s) => s.withdrawals)
+  const { items: sales } = useSelector((s) => s.sales)
+  const { items: withdrawals } = useSelector((s) => s.withdrawals)
   const [paypalEmail, setPaypalEmail] = useState('')
   const [amount, setAmount] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [formErrors, setFormErrors] = useState({})
   const [localWithdrawals, setLocalWithdrawals] = useState(withdrawals)
-  const [localBalance, setLocalBalance] = useState(balance)
   const [success, setSuccess] = useState(false)
+
+  const completedSales = useMemo(
+    () => sales.filter((s) => s.estado === 'delivered_completed'),
+    [sales]
+  )
+  const completedTotal = useMemo(
+    () => completedSales.reduce((sum, s) => sum + (s.monto || 0), 0),
+    [completedSales]
+  )
+  const pendingWithdrawalTotal = useMemo(
+    () => localWithdrawals
+      .filter((w) => w.estado === 'pending')
+      .reduce((sum, w) => sum + (w.monto || 0), 0),
+    [localWithdrawals]
+  )
+  const availableBalance = completedTotal - pendingWithdrawalTotal
 
   const validateForm = () => {
     const errs = {}
@@ -22,7 +38,7 @@ function WithdrawalPanel() {
 
     const num = Number(amount)
     if (!amount || num <= 0) errs.amount = 'Ingresa un monto válido'
-    else if (num > localBalance) errs.amount = `El monto máximo disponible es $${localBalance.toLocaleString()} MXN`
+    else if (num > availableBalance) errs.amount = `El monto máximo disponible es $${availableBalance.toLocaleString()} MXN`
     else if (num < 10) errs.amount = 'El monto mínimo es $10 MXN'
 
     setFormErrors(errs)
@@ -47,7 +63,6 @@ function WithdrawalPanel() {
     }
 
     setLocalWithdrawals((prev) => [newWithdrawal, ...prev])
-    setLocalBalance((prev) => prev - Number(amount))
     setPaypalEmail('')
     setAmount('')
     setSubmitting(false)
@@ -66,12 +81,15 @@ function WithdrawalPanel() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
-          <p className="text-sm text-slate-400">Saldo Disponible</p>
-          <p className="mt-2 text-3xl font-bold text-emerald-400">
-            ${(localBalance || 0).toLocaleString()} <span className="text-base text-slate-500">MXN</span>
-          </p>
-        </div>
+          <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
+            <p className="text-sm text-slate-400">Saldo Disponible</p>
+            <p className="mt-2 text-3xl font-bold text-emerald-400">
+              ${(availableBalance || 0).toLocaleString()} <span className="text-base text-slate-500">MXN</span>
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              {completedSales.length} venta{completedSales.length !== 1 ? 's' : ''} completada{completedSales.length !== 1 ? 's' : ''}
+            </p>
+          </div>
         <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
           <p className="text-sm text-slate-400">Retiros Pendientes</p>
           <p className="mt-2 text-3xl font-bold text-yellow-400">
@@ -113,8 +131,8 @@ function WithdrawalPanel() {
               label="Monto a retirar (MXN)"
               type="number"
               min={10}
-              max={localBalance}
-              placeholder={`Máx. $${(localBalance || 0).toLocaleString()}`}
+              max={availableBalance}
+              placeholder={`Máx. $${(availableBalance || 0).toLocaleString()}`}
               value={amount}
               onChange={(e) => { setAmount(e.target.value); setFormErrors({}) }}
               error={formErrors.amount}
@@ -123,7 +141,7 @@ function WithdrawalPanel() {
             <Button
               type="submit"
               loading={submitting}
-              disabled={!localBalance || localBalance <= 0}
+              disabled={!availableBalance || availableBalance <= 0}
               className="w-full"
             >
               Solicitar Transferencia
@@ -139,10 +157,35 @@ function WithdrawalPanel() {
         <div className="rounded-2xl border border-white/10 bg-slate-900 p-6 lg:col-span-3">
           <h2 className="mb-4 text-lg font-bold text-white">Historial de Retiros</h2>
 
+          {completedSales.length > 0 && (
+            <div className="mb-6">
+              <h3 className="mb-3 text-sm font-semibold text-slate-400">Ventas Completadas</h3>
+              <div className="space-y-2">
+                {completedSales.map((s) => (
+                  <div key={s.id} className="flex items-center justify-between rounded-xl bg-emerald-400/5 px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium text-white">{s.producto?.titulo || 'Producto'}</p>
+                      <p className="text-xs text-slate-400">
+                        ${(s.monto || 0).toLocaleString()} MXN
+                        {s.created_at && (
+                          <span className="ml-2 text-slate-500">
+                            {new Date(s.created_at).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <Badge color="blue">Disponible</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {localWithdrawals.length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">No has solicitado retiros aún</p>
           ) : (
             <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-400">Solicitudes de Retiro</h3>
               {localWithdrawals.map((w) => {
                 const status = WITHDRAWAL_STATUS[w.estado] || {}
                 return (

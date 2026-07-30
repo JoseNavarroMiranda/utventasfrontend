@@ -32,7 +32,7 @@ function PurchaseDetail() {
   if (error) return <p className="py-20 text-center text-red-400">{error}</p>
   if (!purchase) return <p className="py-20 text-center text-slate-400">Pedido no encontrado</p>
 
-  const canOpenDispute = ['pending', 'paid_escrow'].includes(purchase.estado)
+  const canOpenDispute = ['pending', 'pendiente_pago', 'paid_escrow', 'pagado_escrow'].includes(purchase.estado)
 
   return (
     <div className="space-y-6">
@@ -53,7 +53,7 @@ function PurchaseDetail() {
         </div>
       </div>
 
-      {(purchase.estado === 'paid_escrow' || purchase.estado === 'delivered_completed') && (
+      {(purchase.estado === 'paid_escrow' || purchase.estado === 'pagado_escrow' || purchase.estado === 'delivered_completed' || purchase.estado === 'entregado_completado') && (
         <DeliveryToken token={purchase.token_entrega} />
       )}
 

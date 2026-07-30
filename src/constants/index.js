@@ -19,8 +19,11 @@ export const CONTACT_METHODS = [
 
 export const ORDER_STATUS = {
   pending: { label: 'Pendiente', color: 'yellow' },
+  pendiente_pago: { label: 'Pendiente de Pago', color: 'yellow' },
   paid_escrow: { label: 'Pagado (Escrow)', color: 'emerald' },
+  pagado_escrow: { label: 'Pagado (Escrow)', color: 'emerald' },
   delivered_completed: { label: 'Entregado', color: 'blue' },
+  entregado_completado: { label: 'Entregado', color: 'blue' },
   cancelled: { label: 'Cancelado', color: 'red' },
   en_disputa: { label: 'En Disputa', color: 'orange' },
   cancelado_reembolsado: { label: 'Reembolsado', color: 'purple' },

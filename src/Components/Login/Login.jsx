@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { loginUser } from '../../store/slices/authSlice'
 import BackgroundPage from '../Background/backgroundPage'
 import Button from '../Shared/Button'
@@ -14,15 +14,20 @@ const ROLE_HOME = {
 function Login() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { user, loading, error } = useSelector((s) => s.auth)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   useEffect(() => {
-    if (user?.rol && ROLE_HOME[user.rol]) {
-      navigate(ROLE_HOME[user.rol], { replace: true })
+    if (!user?.rol) return
+    const redirect = searchParams.get('redirect')
+    if (redirect) {
+      navigate(redirect, { replace: true })
+    } else {
+      navigate(ROLE_HOME[user.rol] || '/', { replace: true })
     }
-  }, [user, navigate])
+  }, [user, navigate, searchParams])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

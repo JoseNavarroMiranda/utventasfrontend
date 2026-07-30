@@ -1,12 +1,39 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { api } from '../../services/api'
 
+const STATUS_MAP = {
+  pendiente_pago: 'pending',
+  pagado_escrow: 'paid_escrow',
+  entregado_completado: 'delivered_completed',
+  cancelado_reembolsado: 'cancelled',
+}
+
+function normalizeCompra(item) {
+  return {
+    id: item.pedido_id ?? item.id,
+    producto: item.Producto
+      ? { titulo: item.Producto.titulo, precio: item.Producto.precio, categoria: item.Producto.categoria }
+      : item.producto,
+    vendedor: item.Vendedor
+      ? { nombre: item.Vendedor.nombre, email: item.Vendedor.correo }
+      : item.vendedor,
+    monto: Number(item.precio_final ?? item.monto ?? 0),
+    estado: STATUS_MAP[item.estado] || item.estado,
+    token_entrega: item.token_entrega,
+    paypal_order_id: item.paypal_order_id,
+    paypal_capture_id: item.paypal_capture_id,
+    created_at: item.fecha_creacion ?? item.created_at,
+    metodo_contacto: item.metodo_contacto,
+    notas: item.notas,
+  }
+}
+
 export const fetchPurchases = createAsyncThunk(
   'buyer/fetchAll',
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get('/api/comprador/mis-compras')
-      return res.compras ?? []
+      return (res.compras ?? []).map(normalizeCompra)
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -18,7 +45,7 @@ export const fetchPurchaseDetail = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const res = await api.get(`/api/comprador/mis-compras/${id}`)
-      return res.compra
+      return normalizeCompra(res.compra)
     } catch (err) {
       return rejectWithValue(err.message)
     }

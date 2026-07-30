@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Navigate, Route, Routes } from 'react-router'
+import { fetchProfile } from './store/slices/authSlice'
 import Login from './Components/Login/Login'
 import DashboardMain from './Components/Layout/Dashboard/DashboardMain'
 import SellerDashboard from './Components/Seller/SellerDashboard'
@@ -31,8 +34,30 @@ import Terms from './Components/Public/Terms'
 import UpdatePrompt from './Components/PWA/UpdatePrompt'
 import OfflineIndicator from './Components/PWA/OfflineIndicator'
 import ProtectedRoute from './Components/Auth/ProtectedRoute'
+import LoadingSpinner from './Components/Shared/LoadingSpinner'
 
 function App() {
+  const dispatch = useDispatch()
+  const { user } = useSelector((s) => s.auth)
+  const [restoring, setRestoring] = useState(true)
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token && !user) {
+      dispatch(fetchProfile()).finally(() => setRestoring(false))
+    } else {
+      setRestoring(false)
+    }
+  }, [dispatch, user])
+
+  if (restoring) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950">
+        <LoadingSpinner size="lg" />
+      </div>
+    )
+  }
+
   return (
     <>
       <OfflineIndicator />
