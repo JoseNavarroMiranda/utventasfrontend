@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSales, validateToken, clearSaleError } from '../../store/slices/saleSlice'
-import { createWithdrawal } from '../../store/slices/withdrawalSlice'
+import { createWithdrawal, fetchMyWithdrawals } from '../../store/slices/withdrawalSlice'
 import { ORDER_STATUS } from '../../constants'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import EmptyState from '../Shared/EmptyState'
@@ -11,17 +11,15 @@ import Modal from '../Shared/Modal'
 
 function WithdrawalModal({ sale, onClose }) {
   const dispatch = useDispatch()
-  const [usuario, setUsuario] = useState('')
-  const [contrasena, setContrasena] = useState('')
+  const [correo, setCorreo] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async () => {
-    if (!usuario.trim()) { setError('El usuario es obligatorio'); return }
-    if (!contrasena.trim()) { setError('La contraseña es obligatoria'); return }
+    if (!correo.trim()) { setError('El correo PayPal es obligatorio'); return }
     setError('')
     setLoading(true)
-    const result = await dispatch(createWithdrawal({ usuario: usuario.trim(), contrasena, pedido_id: sale.id }))
+    const result = await dispatch(createWithdrawal({ correo_paypal_destino: correo.trim(), pedido_id: sale.id }))
     setLoading(false)
     if (result.meta.requestStatus === 'fulfilled') {
       onClose()
@@ -41,24 +39,14 @@ function WithdrawalModal({ sale, onClose }) {
 
       <div className="space-y-4">
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-100">Usuario</span>
+          <span className="mb-1.5 block text-sm font-medium text-slate-100">Correo PayPal</span>
           <input
-            type="text"
-            placeholder="Tu usuario"
-            value={usuario}
-            onChange={(e) => { setUsuario(e.target.value); setError('') }}
+            type="email"
+            placeholder="correo@paypal.com"
+            value={correo}
+            onChange={(e) => { setCorreo(e.target.value); setError('') }}
             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
             autoFocus
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-100">Contraseña</span>
-          <input
-            type="password"
-            placeholder="Tu contraseña"
-            value={contrasena}
-            onChange={(e) => { setContrasena(e.target.value); setError('') }}
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
           />
         </label>
       </div>
@@ -130,6 +118,7 @@ function SalesList() {
 
   useEffect(() => {
     dispatch(fetchSales())
+    dispatch(fetchMyWithdrawals())
   }, [dispatch])
 
   const needToken = (sale) => sale.estado === 'paid_escrow'

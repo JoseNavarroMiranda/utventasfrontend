@@ -6,7 +6,7 @@ export const fetchMyWithdrawals = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get('/api/vendedor/mis-retiros')
-      return (res.data || []).map(normalizeWithdrawal)
+      return (res.data?.data || []).map(normalizeWithdrawal)
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -15,10 +15,10 @@ export const fetchMyWithdrawals = createAsyncThunk(
 
 export const createWithdrawal = createAsyncThunk(
   'withdrawals/create',
-  async ({ usuario, contrasena, pedido_id }, { rejectWithValue }) => {
+  async ({ correo_paypal_destino, pedido_id }, { rejectWithValue }) => {
     try {
-      const res = await api.post('/api/vendedor/solicitar-retiro', { usuario, contrasena, pedido_id })
-      return normalizeWithdrawal(res.data)
+      const res = await api.post('/api/vendedor/solicitar-retiro', { correo_paypal_destino, pedido_id })
+      return normalizeWithdrawal(res.data?.data || res.data)
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -29,7 +29,7 @@ function normalizeWithdrawal(data) {
   return {
     id: data.retiro_id ?? data.id,
     pedido_id: data.pedido_id,
-    usuario_destino: data.usuario_destino,
+    correo_paypal_destino: data.correo_paypal_destino,
     monto: data.monto_neto ?? data.monto,
     estado: data.estado,
     created_at: data.fecha_solicitud ?? data.created_at,
@@ -37,11 +37,11 @@ function normalizeWithdrawal(data) {
 }
 
 const MOCK_WITHDRAWALS = [
-  { id: 1, pedido_id: null, usuario_destino: 'vendedor1', monto: 2500, estado: 'processed_payout', created_at: '2026-05-15T10:00:00Z' },
-  { id: 2, pedido_id: null, usuario_destino: 'vendedor1', monto: 1200, estado: 'processed_payout', created_at: '2026-04-20T14:30:00Z' },
-  { id: 3, pedido_id: null, usuario_destino: 'vendedor1', monto: 800, estado: 'pending', created_at: '2026-06-10T09:00:00Z' },
-  { id: 4, pedido_id: null, usuario_destino: 'vendedor1', monto: 3500, estado: 'processed_payout', created_at: '2026-03-05T16:00:00Z' },
-  { id: 5, pedido_id: null, usuario_destino: 'vendedor1', monto: 1500, estado: 'pending', created_at: '2026-06-12T11:00:00Z' },
+  { id: 1, pedido_id: null, correo_paypal_destino: 'vendedor1@paypal.com', monto: 2500, estado: 'processed_payout', created_at: '2026-05-15T10:00:00Z' },
+  { id: 2, pedido_id: null, correo_paypal_destino: 'vendedor1@paypal.com', monto: 1200, estado: 'processed_payout', created_at: '2026-04-20T14:30:00Z' },
+  { id: 3, pedido_id: null, correo_paypal_destino: 'vendedor1@paypal.com', monto: 800, estado: 'pending', created_at: '2026-06-10T09:00:00Z' },
+  { id: 4, pedido_id: null, correo_paypal_destino: 'vendedor1@paypal.com', monto: 3500, estado: 'processed_payout', created_at: '2026-03-05T16:00:00Z' },
+  { id: 5, pedido_id: null, correo_paypal_destino: 'vendedor1@paypal.com', monto: 1500, estado: 'pending', created_at: '2026-06-12T11:00:00Z' },
 ]
 
 const withdrawalSlice = createSlice({

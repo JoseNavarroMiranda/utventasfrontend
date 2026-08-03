@@ -111,7 +111,7 @@ function WithdrawalPanel() {
                   <div key={w.id} className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
                     <div>
                       <p className="text-sm font-medium text-white">${(w.monto || 0).toLocaleString()} MXN</p>
-                      <p className="text-xs text-slate-400">Usuario: {w.usuario_destino || '—'}</p>
+                      <p className="text-xs text-slate-400">PayPal: {w.correo_paypal_destino || '—'}</p>
                       {w.created_at && (
                         <p className="text-xs text-slate-500">
                           {new Date(w.created_at).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
