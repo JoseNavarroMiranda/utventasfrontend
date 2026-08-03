@@ -12,24 +12,28 @@ function PayPalButton({ productId, onComplete }) {
   const { orderedProductIds } = useSelector((s) => s.products)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [processing, setProcessing] = useState(false)
   const [clientId, setClientId] = useState(null)
   const containerRef = useRef(null)
   const buttonsRendered = useRef(false)
   const completed = useRef(false)
-  const orderIdRef = useRef(null)
 
-  const completePurchase = async () => {
+  const confirmRetention = async (orderId) => {
     if (completed.current) return
-    completed.current = true
+    setProcessing(true)
+    setError('')
+    setNotice('')
     try {
-      if (orderIdRef.current) {
-        await api.put('/api/pedidos/confirmar-retencion', { paypal_order_id: orderIdRef.current })
-      }
-    } catch {
+      await api.put('/api/pedidos/confirmar-retencion', { paypal_order_id: orderId })
+      completed.current = true
+      dispatch(markProductAsOrdered(productId))
+      onComplete?.()
+      navigate('/comprador/compras')
+    } catch (err) {
+      setProcessing(false)
+      setError(err.message || 'No se pudo confirmar el pago en PayPal')
     }
-    dispatch(markProductAsOrdered(productId))
-    onComplete?.()
-    navigate('/comprador/compras')
   }
 
   useEffect(() => {
@@ -64,18 +68,21 @@ function PayPalButton({ productId, onComplete }) {
           if (orderedProductIds.includes(productId)) {
             throw new Error('Este producto ya no esta disponible')
           }
+          setError('')
+          setNotice('')
           const res = await api.post('/api/pedidos/', { producto_id: productId })
-          orderIdRef.current = res.data?.paypal_order_id
-          return orderIdRef.current
+          return res.data?.paypal_order_id
         },
-        onApprove: async () => {
-          completePurchase()
+        onApprove: async (data) => {
+          await confirmRetention(data.orderID)
         },
         onCancel: () => {
-          completePurchase()
+          setProcessing(false)
+          setNotice('Pago cancelado. Puedes intentarlo de nuevo.')
         },
         onError: () => {
-          completePurchase()
+          setProcessing(false)
+          setError('Ocurrió un error con PayPal. Intenta nuevamente.')
         },
       }).render(containerRef.current)
         .then(() => setLoading(false))
@@ -94,7 +101,7 @@ function PayPalButton({ productId, onComplete }) {
       if (script.parentNode) script.parentNode.removeChild(script)
       buttonsRendered.current = false
     }
-  }, [clientId, productId, navigate, onComplete])
+  }, [clientId, productId, navigate, onComplete, orderedProductIds])
 
   if (error) {
     return <p className="rounded-xl bg-red-400/10 px-4 py-3 text-sm text-red-300">{error}</p>
@@ -103,7 +110,16 @@ function PayPalButton({ productId, onComplete }) {
   return (
     <div className="space-y-3">
       <div ref={containerRef} className="min-h-[40px]" />
-      {loading && (
+      {notice && (
+        <p className="rounded-xl bg-yellow-400/10 px-4 py-3 text-sm text-yellow-200">{notice}</p>
+      )}
+      {processing && (
+        <div className="flex items-center justify-center gap-2 py-2">
+          <LoadingSpinner size="sm" />
+          <span className="text-sm text-slate-400">Confirmando pago con PayPal...</span>
+        </div>
+      )}
+      {loading && !processing && (
         <div className="flex justify-center py-2">
           <LoadingSpinner size="sm" />
         </div>
