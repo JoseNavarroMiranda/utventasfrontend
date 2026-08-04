@@ -12,10 +12,14 @@ function normalizeCompra(item) {
   return {
     id: item.pedido_id ?? item.id,
     producto: item.Producto
-      ? { titulo: item.Producto.titulo, precio: item.Producto.precio, categoria: item.Producto.categoria }
+      ? {
+          titulo: item.Producto.titulo,
+          precio: item.Producto.precio,
+          categoria: item.Producto.Categoria?.nombre ?? item.Producto.categoria,
+        }
       : item.producto,
     vendedor: item.Vendedor
-      ? { nombre: item.Vendedor.nombre, email: item.Vendedor.correo }
+      ? { nombre: item.Vendedor.nombre, email: item.Vendedor.correo, telefono: item.Vendedor.telefono_defecto }
       : item.vendedor,
     monto: Number(item.precio_final ?? item.monto ?? 0),
     estado: STATUS_MAP[item.estado] || item.estado,
@@ -23,7 +27,7 @@ function normalizeCompra(item) {
     paypal_order_id: item.paypal_order_id,
     paypal_capture_id: item.paypal_capture_id,
     created_at: item.fecha_creacion ?? item.created_at,
-    metodo_contacto: item.metodo_contacto,
+    metodo_contacto: item.Producto?.contacto_metodo ?? item.metodo_contacto,
     notas: item.notas,
   }
 }

@@ -69,12 +69,21 @@ function Navbar() {
   return (
     <header className="relative z-50 border-b border-white/10 bg-slate-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-        <Link to="/" className="text-lg font-black tracking-tight text-white">
+        <Link
+          to="/"
+          onClick={(e) => {
+            if (window.location.pathname === '/') {
+              e.preventDefault()
+              window.location.reload()
+            }
+          }}
+          className="text-lg font-black tracking-tight text-white"
+        >
           UTVentas
         </Link>
 
         <nav className="flex items-center gap-4 text-sm text-slate-200">
-          <Link className="transition hover:text-cyan-300" to="/">
+          <Link className="hidden transition hover:text-cyan-300 sm:inline-flex" to="/">
             Productos
           </Link>
 

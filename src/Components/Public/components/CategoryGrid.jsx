@@ -24,7 +24,7 @@ const iconMap = {
   ),
 }
 
-function CategoryGrid() {
+function CategoryGrid({ selected = [], onToggle }) {
   return (
     <section className="py-12">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -32,16 +32,34 @@ function CategoryGrid() {
         <p className="mt-1 text-sm text-slate-400">Explora productos por categoría</p>
 
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8">
-          {CATEGORIES.map((cat) => (
-            <a
-              key={cat}
-              href={`/?categoria=${encodeURIComponent(cat)}`}
-              className="flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-slate-900 p-4 transition hover:border-cyan-400/30 hover:bg-slate-800 sm:p-5 sm:gap-3"
-            >
-              <span className="text-cyan-300 [&>svg]:h-6 [&>svg]:w-6 sm:[&>svg]:h-8 sm:[&>svg]:w-8">{iconMap[cat]}</span>
-              <span className="text-center text-xs font-medium text-slate-300">{cat}</span>
-            </a>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const isSelected = selected.includes(cat)
+            return (
+              <button
+                key={cat}
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => onToggle(cat)}
+                className={`flex flex-col items-center gap-2 rounded-2xl border p-4 transition sm:p-5 sm:gap-3 ${
+                  isSelected
+                    ? 'border-cyan-400 bg-cyan-400/10 shadow-[0_0_0_1px_rgba(34,211,238,0.3)]'
+                    : 'border-white/10 bg-slate-900 hover:border-cyan-400/30 hover:bg-slate-800'
+                }`}
+              >
+                <span className="text-cyan-300 [&>svg]:h-6 [&>svg]:w-6 sm:[&>svg]:h-8 sm:[&>svg]:w-8">{iconMap[cat]}</span>
+                <span className={`text-center text-xs font-medium ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                  {cat}
+                </span>
+                {isSelected && (
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-400 text-slate-950">
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
     </section>

@@ -118,6 +118,20 @@ function PremiumSection() {
     )
   }
 
+  if (product.es_activo === false) {
+    return (
+      <div className="py-20 text-center">
+        <h2 className="mt-4 text-2xl font-bold text-white">Producto vendido</h2>
+        <p className="mt-2 text-slate-400">
+          <strong className="text-white">{product.titulo}</strong> ya está marcado como vendido y no se puede destacar.
+        </p>
+        <Button className="mt-6" variant="ghost" onClick={() => navigate('/vendedor/publicaciones')}>
+          Volver a mis publicaciones
+        </Button>
+      </div>
+    )
+  }
+
   if (success) {
     return (
       <div className="py-20 text-center">

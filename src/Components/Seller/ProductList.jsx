@@ -144,6 +144,8 @@ function ProductList() {
                 <td className="px-4 py-3">
                   {product.es_premium ? (
                     <Badge color="yellow">Premium</Badge>
+                  ) : product.es_activo === false ? (
+                    <span className="text-xs text-slate-500">No disponible</span>
                   ) : (
                     <Link
                       to={`/vendedor/publicaciones/${product.id}/destacar`}

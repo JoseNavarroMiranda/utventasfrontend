@@ -13,19 +13,26 @@ function Home() {
   const dispatch = useDispatch()
   const { items: products, orderedProductIds, loading } = useSelector((s) => s.products)
   const [search, setSearch] = useState('')
-  const [searchParams] = useSearchParams()
-  const categoryFilter = searchParams.get('categoria') || ''
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedCategories = searchParams.getAll('categoria')
 
   useEffect(() => {
     dispatch(fetchActiveProducts())
     dispatch(fetchOrderedProductIds())
   }, [dispatch])
 
+  const toggleCategory = (category) => {
+    const next = selectedCategories.includes(category)
+      ? selectedCategories.filter((c) => c !== category)
+      : [...selectedCategories, category]
+    setSearchParams(next.length ? { categoria: next } : {}, { replace: true })
+  }
+
   const filtered = useMemo(() => {
     let result = products.filter((p) => p.es_activo !== false && !orderedProductIds.includes(p.id))
 
-    if (categoryFilter) {
-      result = result.filter((p) => p.categoria === categoryFilter)
+    if (selectedCategories.length > 0) {
+      result = result.filter((p) => selectedCategories.includes(p.categoria))
     }
     if (search.trim()) {
       const q = search.toLowerCase()
@@ -41,23 +48,23 @@ function Home() {
       if (!a.es_premium && b.es_premium) return 1
       return new Date(b.created_at) - new Date(a.created_at)
     })
-  }, [products, search, categoryFilter])
+  }, [products, search, selectedCategories])
 
   return (
     <PublicLayout>
       <HeroBanner search={search} onSearchChange={setSearch} />
-      <CategoryGrid />
+      <CategoryGrid selected={selectedCategories} onToggle={toggleCategory} />
 
       <section className="py-12">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white">
-                {categoryFilter ? `Categoría: ${categoryFilter}` : 'Productos Disponibles'}
+                {selectedCategories.length > 0 ? `Categorías: ${selectedCategories.join(', ')}` : 'Productos Disponibles'}
               </h2>
               <p className="mt-1 text-sm text-slate-400">
-                {categoryFilter
-                  ? `Explora productos en ${categoryFilter}`
+                {selectedCategories.length > 0
+                  ? `Explora productos en ${selectedCategories.join(', ')}`
                   : 'Encuentra lo que necesitas en el campus'}
               </p>
             </div>
@@ -78,7 +85,7 @@ function Home() {
               actionLabel="Ver todos"
               onAction={() => {
                 setSearch('')
-                window.history.replaceState({}, '', '/')
+                setSearchParams({})
               }}
             />
           ) : (

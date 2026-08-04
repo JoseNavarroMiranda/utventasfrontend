@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams, Link, useNavigate } from 'react-router'
-import { fetchActiveProducts, fetchOrderedProductIds, markProductAsOrdered } from '../../store/slices/productSlice'
+import { fetchOrderedProductIds, fetchProductById } from '../../store/slices/productSlice'
 import PublicLayout from './components/PublicLayout'
 import ImageCarousel from './components/ImageCarousel'
 import LoadingSpinner from '../Shared/LoadingSpinner'
@@ -24,20 +24,38 @@ function ProductDetail() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { user } = useSelector((s) => s.auth)
-  const { items: products, orderedProductIds, loading, error } = useSelector((s) => s.products)
+  const { orderedProductIds } = useSelector((s) => s.products)
+  const [product, setProduct] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [buyError, setBuyError] = useState('')
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showPayPal, setShowPayPal] = useState(false)
   const [purchaseComplete, setPurchaseComplete] = useState(false)
 
   useEffect(() => {
-    if (products.length === 0) dispatch(fetchActiveProducts())
+    let active = true
+    setLoading(true)
+    setError('')
+    setProduct(null)
+    dispatch(fetchProductById(Number(id)))
+      .unwrap()
+      .then((p) => {
+        if (active) setProduct(p)
+      })
+      .catch((err) => {
+        if (active) setError(typeof err === 'string' ? err : 'No se pudo cargar el producto')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
     dispatch(fetchOrderedProductIds())
-  }, [dispatch, products.length])
+    return () => {
+      active = false
+    }
+  }, [dispatch, id])
 
   const productId = Number(id)
-  const product = products.find((p) => p.id === productId)
-
   const isOrdered = orderedProductIds.includes(productId)
 
   const handleBuy = () => {
@@ -57,8 +75,8 @@ function ProductDetail() {
     setBuyError('')
   }
 
-  if (loading && products.length === 0) return <PublicLayout><LoadingSpinner className="py-20" size="lg" /></PublicLayout>
-  if (!product && error) return <PublicLayout><p className="py-20 text-center text-red-400">{error}</p></PublicLayout>
+  if (loading) return <PublicLayout><LoadingSpinner className="py-20" size="lg" /></PublicLayout>
+  if (error) return <PublicLayout><p className="py-20 text-center text-red-400">{error}</p></PublicLayout>
   if (!product) return <PublicLayout><p className="py-20 text-center text-slate-400">Producto no encontrado</p></PublicLayout>
 
   return (
