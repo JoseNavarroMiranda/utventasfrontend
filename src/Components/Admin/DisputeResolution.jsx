@@ -44,20 +44,46 @@ function DisputeResolution() {
   }, [dispatch])
   const [note, setNote] = useState('')
   const [noteRequired, setNoteRequired] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [feedback, setFeedback] = useState(null)
+  const [resolved, setResolved] = useState(null)
 
   const openDetail = (dispute) => {
     setSelected(dispute)
     setNote('')
     setNoteRequired(false)
+    setFeedback(null)
+    setResolved(null)
   }
 
-  const handleResolve = (estado) => {
+  const handleResolve = async (estado) => {
     if (!note.trim()) {
       setNoteRequired(true)
       return
     }
-    dispatch(resolveDispute({ id: selected.id, estado, notas_auditoria: note.trim() }))
-    setSelected(null)
+    const caso = selected
+    setSubmitting(true)
+    setFeedback(null)
+    const res = await dispatch(
+      resolveDispute({ id: caso.id, estado, notas_auditoria: note.trim() })
+    )
+    setSubmitting(false)
+    if (res.meta.requestStatus === 'fulfilled') {
+      const msg =
+        estado === 'REEMBOLSO'
+          ? 'Reembolso al comprador realizado. El pedido fue cancelado y la publicación quedó suspendida.'
+          : 'Fondos liberados al vendedor. El pedido se marcó como completado.'
+      setFeedback({
+        type: 'success',
+        msg,
+      })
+      setResolved({ estado, msg })
+    } else {
+      setFeedback({
+        type: 'error',
+        msg: res.error?.message || 'No se pudo resolver la disputa. Intenta de nuevo.',
+      })
+    }
   }
 
   return (
@@ -66,6 +92,25 @@ function DisputeResolution() {
         <h1 className="text-2xl font-bold text-white">Resolucion de Disputas</h1>
         <p className="mt-1 text-sm text-slate-400">{disputes.length} disputas activas pendientes de revision</p>
       </div>
+
+      {feedback && (
+        <div
+          className={`flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm ${
+            feedback.type === 'success'
+              ? 'border-emerald-400/30 bg-emerald-500/10 text-emerald-300'
+              : 'border-red-400/30 bg-red-500/10 text-red-300'
+          }`}
+        >
+          <p className="font-medium">{feedback.msg}</p>
+          <button
+            onClick={() => setFeedback(null)}
+            className="shrink-0 text-xs opacity-70 transition hover:opacity-100"
+            aria-label="Cerrar mensaje"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <Table
         headers={[
@@ -222,30 +267,64 @@ function DisputeResolution() {
               </label>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-slate-400">
-                  Monto en disputa: <strong className="text-white">${selected.monto.toLocaleString()} MXN</strong>
-                </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Al reembolsar al comprador, la publicación quedará suspendida y el vendedor deberá solicitar su relanzamiento.
-                </p>
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button
-                  variant="danger"
-                  onClick={() => handleResolve('REEMBOLSO')}
+                        {feedback && !resolved && feedback.type === 'error' && (
+              <div className="flex items-start justify-between gap-3 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                <p className="font-medium">{feedback.msg}</p>
+                <button
+                  onClick={() => setFeedback(null)}
+                  className="shrink-0 text-xs opacity-70 transition hover:opacity-100"
+                  aria-label="Cerrar mensaje"
                 >
-                  Reembolsar al Comprador
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={() => handleResolve('PAGO_VENDEDOR')}
-                >
-                  Liberar al Vendedor
-                </Button>
+                  ✕
+                </button>
               </div>
-            </div>
+            )}
+
+            {resolved ? (
+              <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-sm font-bold text-slate-950">
+                    ✓
+                  </span>
+                  <div>
+                    <p className="font-semibold text-emerald-300">Disputa resuelta correctamente</p>
+                    <p className="mt-1 text-sm text-emerald-200/90">{resolved.msg}</p>
+                    <p className="mt-2 text-xs text-emerald-300/70">
+                      La disputa ya no aparece en la lista de pendientes. Puedes cerrar esta ventana.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">
+                    Monto en disputa: <strong className="text-white">${selected.monto.toLocaleString()} MXN</strong>
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Al reembolsar al comprador, la publicación quedará suspendida y el vendedor deberá solicitar su relanzamiento.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    variant="danger"
+                    onClick={() => handleResolve('REEMBOLSO')}
+                    loading={submitting}
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Procesando...' : 'Reembolsar al Comprador'}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={() => handleResolve('PAGO_VENDEDOR')}
+                    loading={submitting}
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Procesando...' : 'Liberar al Vendedor'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </Modal>

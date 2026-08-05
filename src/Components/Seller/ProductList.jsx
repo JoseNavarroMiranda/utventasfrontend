@@ -29,8 +29,9 @@ function ProductList() {
     setDeleteTarget(null)
   }
 
-  const activeProducts = products.filter((p) => p.es_activo !== false)
-  const inactiveProducts = products.filter((p) => p.es_activo === false)
+  const activeProducts = products.filter((p) => p.es_activo !== false && !p.suspendido)
+  const inactiveProducts = products.filter((p) => p.es_activo === false && !p.suspendido)
+  const suspendedProducts = products.filter((p) => p.suspendido === true)
   const displayedProducts = showInactive ? inactiveProducts : activeProducts
 
   if (loading) return <LoadingSpinner className="py-20" size="lg" />
@@ -50,6 +51,20 @@ function ProductList() {
   if (activeProducts.length === 0 && !showInactive) {
     return (
       <div className="space-y-6">
+        {suspendedProducts.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-orange-300">
+              {suspendedProducts.length} publicación{suspendedProducts.length !== 1 ? 'es' : ''} suspendida
+              {suspendedProducts.length !== 1 ? 's' : ''} por resolución de disputa. Debes solicitar su relanzamiento para volver a venderla.
+            </p>
+            <Link
+              to="/vendedor/relanzamientos"
+              className="shrink-0 text-xs font-semibold text-orange-200 underline transition hover:text-orange-100"
+            >
+              Solicitar relanzamiento
+            </Link>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white">Mis Publicaciones</h1>
@@ -75,6 +90,21 @@ function ProductList() {
 
   return (
     <div className="space-y-6">
+      {suspendedProducts.length > 0 && (
+        <div className="flex flex-col gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-orange-300">
+            {suspendedProducts.length} publicación{suspendedProducts.length !== 1 ? 'es' : ''} suspendida
+            {suspendedProducts.length !== 1 ? 's' : ''} por resolución de disputa. Debes solicitar su relanzamiento para volver a venderla.
+          </p>
+          <Link
+            to="/vendedor/relanzamientos"
+            className="shrink-0 text-xs font-semibold text-orange-200 underline transition hover:text-orange-100"
+          >
+            Solicitar relanzamiento
+          </Link>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">

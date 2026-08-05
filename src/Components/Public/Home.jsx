@@ -50,7 +50,9 @@ function Home() {
   const hasFilters = selectedCategories.length > 0 || search.trim().length > 0
 
   const filtered = useMemo(() => {
-    let result = products.filter((p) => p.es_activo !== false && !orderedProductIds.includes(p.id))
+    let result = products.filter(
+      (p) => p.es_activo !== false && !p.suspendido && !orderedProductIds.includes(p.id)
+    )
 
     if (selectedCategories.length > 0) {
       result = result.filter((p) => selectedCategories.includes(p.categoria))
