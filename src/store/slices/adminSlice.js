@@ -95,13 +95,27 @@ export const fetchAuditLogs = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get('/api/admin/auditoria-pedidos')
-      return (res.data || []).map((l) => ({
+      return (res.data?.data || res.data || []).map((l) => ({
         id: l.historico_id ?? l.id,
         fecha: l.fecha_cambio ?? l.fecha,
         usuario: l.UsuarioAccion?.nombre ?? l.usuario ?? 'Sistema',
+        usuario_correo: l.UsuarioAccion?.correo ?? '',
         accion: l.accion ?? '',
         detalle: l.detalle ?? '',
         pedido_id: l.pedido_id,
+        estado_anterior: l.estado_anterior,
+        estado_nuevo: l.estado_nuevo,
+        notas: l.notes_auditoria ?? l.notas_auditoria ?? '',
+        producto: l.Pedido?.Producto
+          ? {
+              titulo: l.Pedido.Producto.titulo,
+              precio: l.Pedido.Producto.precio,
+              es_activo: l.Pedido.Producto.es_activo,
+              suspendido: l.Pedido.Producto.suspendido,
+            }
+          : null,
+        pedido_estado: l.Pedido?.estado ?? null,
+        pedido_monto: l.Pedido?.precio_final ?? null,
       }))
     } catch (err) {
       return rejectWithValue(err.message)
