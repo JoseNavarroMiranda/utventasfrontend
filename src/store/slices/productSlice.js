@@ -108,9 +108,9 @@ export const fetchOrderedProductIds = createAsyncThunk(
 
 export const promoteToPremium = createAsyncThunk(
   'products/promoteToPremium',
-  async ({ id, orderId, dias }, { rejectWithValue }) => {
+  async ({ id, orderId, dias, monto }, { rejectWithValue }) => {
     try {
-      const res = await api.put(`/api/vendedor/promover-premium/${id}`, { orderId, dias })
+      const res = await api.put(`/api/vendedor/promover-premium/${id}`, { orderId, dias, monto })
       return { id, es_premium: res.data?.es_premium, premium_hasta: res.data?.premium_hasta }
     } catch (err) {
       return rejectWithValue(err.message)

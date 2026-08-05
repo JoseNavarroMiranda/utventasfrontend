@@ -26,7 +26,7 @@ function WithdrawalPanel() {
       .reduce((sum, w) => sum + (w.monto || 0), 0),
     [withdrawals]
   )
-  const availableBalance = completedTotal - pendingWithdrawalTotal
+  const availableBalance = Math.max(0, completedTotal - pendingWithdrawalTotal)
 
   const pendingTotal = withdrawals
     .filter((w) => w.estado === 'pending')

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { fetchProducts } from '../../store/slices/productSlice'
 import { fetchSales } from '../../store/slices/saleSlice'
+import { fetchMyWithdrawals } from '../../store/slices/withdrawalSlice'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
@@ -27,6 +28,7 @@ function DashboardOverview() {
   useEffect(() => {
     dispatch(fetchProducts())
     dispatch(fetchSales())
+    dispatch(fetchMyWithdrawals())
   }, [dispatch])
 
   const loading = productsLoading || salesLoading
@@ -55,7 +57,7 @@ function DashboardOverview() {
       .reduce((sum, w) => sum + (w.monto || 0), 0),
     [withdrawals]
   )
-  const availableBalance = completedTotal - pendingWithdrawals
+  const availableBalance = Math.max(0, completedTotal - pendingWithdrawals)
 
   if (loading) return <LoadingSpinner className="py-20" size="lg" />
 

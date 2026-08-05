@@ -25,6 +25,7 @@ function PremiumSection() {
   const [clientId, setClientId] = useState(null)
   const [paypalLoaded, setPaypalLoaded] = useState(false)
   const [paypalError, setPaypalError] = useState('')
+  const [notice, setNotice] = useState('')
   const containerRef = useRef(null)
   const buttonsRendered = useRef(false)
   const completed = useRef(false)
@@ -53,29 +54,31 @@ function PremiumSection() {
       if (!window.paypal || !containerRef.current) return
       window.paypal.Buttons({
         createOrder: async () => {
+          setPaypalError('')
+          setNotice('')
           const res = await api.post('/api/vendedor/crear-orden-paypal', {
             monto: selectedPlan.price,
             descripcion: `Destacar "${product.titulo}" - Plan ${selectedPlan.days} días`
           })
+          if (!res?.id) throw new Error('No se pudo crear la orden en PayPal')
           return res.id
         },
         onApprove: async (data) => {
           if (completed.current) return
           completed.current = true
-          await dispatch(promoteToPremium({ id: product.id, orderId: data.orderID, dias: selectedPlan.days }))
-          setSuccess(true)
+          try {
+            await dispatch(promoteToPremium({ id: product.id, orderId: data.orderID, dias: selectedPlan.days, monto: selectedPlan.price })).unwrap()
+            setSuccess(true)
+          } catch (err) {
+            completed.current = false
+            setPaypalError(err?.message || 'No se pudo confirmar el pago en PayPal')
+          }
         },
-        onCancel: async () => {
-          if (completed.current) return
-          completed.current = true
-          await dispatch(promoteToPremium({ id: product.id, orderId: null, dias: selectedPlan.days }))
-          setSuccess(true)
+        onCancel: () => {
+          setNotice('Pago cancelado. Puedes intentarlo de nuevo.')
         },
-        onError: async () => {
-          if (completed.current) return
-          completed.current = true
-          await dispatch(promoteToPremium({ id: product.id, orderId: null, dias: selectedPlan.days }))
-          setSuccess(true)
+        onError: () => {
+          setPaypalError('Ocurrió un error con PayPal. Intenta nuevamente.')
         },
       }).render(containerRef.current)
         .then(() => setPaypalLoaded(true))
@@ -212,7 +215,7 @@ function PremiumSection() {
 
         <p className="mt-4 text-xs text-slate-500">
           Al hacer clic en "Pagar" se abrirá PayPal para procesar el pago.
-          La transacción quedará registrada aunque el pago no se complete.
+          Tu anuncio se destacará solo cuando el pago se complete correctamente.
         </p>
       </div>
     )
@@ -251,9 +254,12 @@ function PremiumSection() {
           <LoadingSpinner size="sm" />
         </div>
       )}
+      {notice && (
+        <div className="mt-4 rounded-xl bg-yellow-400/10 px-4 py-3 text-sm text-yellow-200">{notice}</div>
+      )}
 
       <p className="mt-4 text-xs text-slate-500">
-        El anuncio se destacará aunque el pago no se complete. El pago es solo una contribución voluntaria.
+        El anuncio se destacará únicamente cuando PayPal confirme el cobro correctamente.
       </p>
     </div>
   )

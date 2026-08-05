@@ -59,12 +59,10 @@ function Home() {
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-white">
-                {selectedCategories.length > 0 ? `Categorías: ${selectedCategories.join(', ')}` : 'Productos Disponibles'}
-              </h2>
+              <h2 className="text-2xl font-bold text-white">Productos Disponibles</h2>
               <p className="mt-1 text-sm text-slate-400">
                 {selectedCategories.length > 0
-                  ? `Explora productos en ${selectedCategories.join(', ')}`
+                  ? 'Explora los productos de la categoría seleccionada'
                   : 'Encuentra lo que necesitas en el campus'}
               </p>
             </div>

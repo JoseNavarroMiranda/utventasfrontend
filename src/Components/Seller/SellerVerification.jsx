@@ -16,6 +16,7 @@ function SellerVerification() {
   const [clientId, setClientId] = useState(null)
   const [paypalLoaded, setPaypalLoaded] = useState(false)
   const [paypalError, setPaypalError] = useState('')
+  const [notice, setNotice] = useState('')
   const [success, setSuccess] = useState(false)
   const containerRef = useRef(null)
   const buttonsRendered = useRef(false)
@@ -43,26 +44,34 @@ function SellerVerification() {
       if (!window.paypal || !containerRef.current) return
       window.paypal.Buttons({
         createOrder: async () => {
+          setPaypalError('')
+          setNotice('')
           const res = await api.post('/api/vendedor/crear-orden-paypal', {
             monto: VERIFICATION_PRICE,
             descripcion: 'Verificación de vendedor UTVentas'
           })
+          if (!res?.id) throw new Error('No se pudo crear la orden en PayPal')
           return res.id
         },
         onApprove: async (data) => {
           if (completed.current) return
           completed.current = true
-          await handleVerify(data.orderID)
+          try {
+            const res = await api.post('/api/vendedor/verificar', { orderId: data.orderID })
+            if (res.data?.verificado_como_vendedor) {
+              dispatch(updateUser({ verificado_como_vendedor: true }))
+            }
+            setSuccess(true)
+          } catch (err) {
+            completed.current = false
+            setPaypalError(err?.message || 'No se pudo confirmar el pago en PayPal')
+          }
         },
-        onCancel: async () => {
-          if (completed.current) return
-          completed.current = true
-          await handleVerify(null)
+        onCancel: () => {
+          setNotice('Pago cancelado. Puedes intentarlo de nuevo.')
         },
-        onError: async () => {
-          if (completed.current) return
-          completed.current = true
-          await handleVerify(null)
+        onError: () => {
+          setPaypalError('Ocurrió un error con PayPal. Intenta nuevamente.')
         },
       }).render(containerRef.current)
         .then(() => setPaypalLoaded(true))
@@ -75,17 +84,7 @@ function SellerVerification() {
       if (script.parentNode) script.parentNode.removeChild(script)
       buttonsRendered.current = false
     }
-  }, [clientId, user?.verificado_como_vendedor])
-
-  const handleVerify = async (orderId) => {
-    try {
-      const res = await api.post('/api/vendedor/verificar', { orderId })
-      if (res.data?.verificado_como_vendedor) {
-        dispatch(updateUser({ verificado_como_vendedor: true }))
-      }
-    } catch {}
-    setSuccess(true)
-  }
+  }, [clientId, user?.verificado_como_vendedor, dispatch])
 
   if (success) {
     return (
@@ -154,10 +153,8 @@ function SellerVerification() {
         <div ref={containerRef} className="min-h-[40px]" />
       )}
 
-      {paypalError && (
-        <Button onClick={() => handleVerify(null)} className="w-full">
-          Verificar sin PayPal
-        </Button>
+      {notice && (
+        <div className="mt-4 rounded-xl bg-yellow-400/10 px-4 py-3 text-sm text-yellow-200">{notice}</div>
       )}
 
       {!paypalLoaded && !paypalError && (
@@ -167,7 +164,7 @@ function SellerVerification() {
       )}
 
       <p className="mt-4 text-xs text-slate-500">
-        La verificación se procesará aunque el pago no se complete.
+        La verificación se activará únicamente cuando PayPal confirme el cobro correctamente.
       </p>
     </div>
   )
