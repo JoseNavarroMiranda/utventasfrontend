@@ -49,22 +49,41 @@ export const fetchDisputes = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get('/api/admin/disputas')
-      return (res.data || []).map((d) => ({
-        id: d.disputa_id ?? d.id,
-        pedido_id: d.pedido_id,
-        producto: d.Pedido?.Producto ? { titulo: d.Pedido.Producto.titulo } : (d.producto || { titulo: '—' }),
+      return (res.data || []).map((d) => {
+        const prod = d.Pedido?.Producto
+        const imagenes = prod?.ProductoImagens || []
+        const imagenPrincipal = imagenes.find((i) => i.es_principal) || imagenes[0]
+        return {
+          id: d.disputa_id ?? d.id,
+          pedido_id: d.pedido_id,
+          producto: prod
+            ? {
+                titulo: prod.titulo,
+                descripcion: prod.descripcion,
+                precio: Number(prod.precio ?? 0),
+                categoria: prod.Categoria?.nombre ?? prod.categoria ?? null,
+                imagen: imagenPrincipal?.url_imagen ?? null,
+                es_activo: prod.es_activo,
+                fecha_publicacion: prod.fecha_publicacion,
+              }
+            : (d.producto || { titulo: '—' }),
         comprador: d.Comprador ? { nombre: d.Comprador.nombre, email: d.Comprador.correo } : (d.comprador || { nombre: '—' }),
         vendedor: d.Vendedor ? { nombre: d.Vendedor.nombre, email: d.Vendedor.correo } : (d.vendedor || { nombre: '—' }),
         monto: d.monto ?? d.Pedido?.precio_final ?? 0,
         estado: d.estado,
-        created_at: d.fecha_creacion ?? d.created_at,
+        motivo: d.motivo ?? '',
+        descripcion: d.descripcion ?? '',
+        evidencias: (d.DisputaImagens || []).map((img) => img.url_imagen),
+        fecha_apertura: d.fecha_apertura ?? null,
+        created_at: d.fecha_creacion ?? d.fecha_apertura ?? d.created_at,
         historico: d.Pedido?.HistoricoPedidos?.map((h) => ({
           fecha: h.fecha_cambio,
-          accion: h.accion,
+          accion: h.accion ?? `Cambio a '${h.estado_nuevo}'`,
           usuario: h.UsuarioAccion?.nombre || h.usuario_accion_id || 'Sistema',
-          notas: h.detalle,
+          notas: h.detalle || h.notes_auditoria,
         })) || d.historico || [],
-      }))
+        }
+      })
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -214,6 +233,58 @@ export const approveWithdrawal = createAsyncThunk(
   }
 )
 
+export const fetchRelaunchRequests = createAsyncThunk(
+  'admin/fetchRelaunchRequests',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get('/api/admin/relanzamientos')
+      return (res.data || []).map((r) => {
+        const prod = r.Producto
+        const prodImagenes = prod?.ProductoImagens || []
+        const principal = prodImagenes.find((i) => i.es_principal) || prodImagenes[0]
+        return {
+          id: r.solicitud_id,
+          producto_id: r.producto_id,
+          descripcion: r.descripcion,
+          estado: r.estado,
+          resolucion_texto: r.resolucion_texto,
+          fecha_solicitud: r.fecha_solicitud,
+          fecha_revision: r.fecha_revision,
+          producto: prod
+            ? {
+                titulo: prod.titulo,
+                descripcion: prod.descripcion,
+                precio: Number(prod.precio ?? 0),
+                categoria: prod.Categoria?.nombre ?? null,
+                es_activo: prod.es_activo,
+                suspendido: prod.suspendido,
+                fecha_publicacion: prod.fecha_publicacion,
+                imagen: principal?.url_imagen ?? null,
+              }
+            : { titulo: '—' },
+          vendedor: r.Vendedor
+            ? { nombre: r.Vendedor.nombre, email: r.Vendedor.correo }
+            : { nombre: '—' },
+          imagenes: (r.SolicitudRelanzamientoImagens || []).map((i) => i.url_imagen),
+        }
+      })
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const reviewRelaunchRequest = createAsyncThunk(
+  'admin/reviewRelaunchRequest',
+  async ({ id, aprobada, resolucion_texto }, { rejectWithValue }) => {
+    try {
+      return await api.put(`/api/admin/relanzamientos/${id}/revisar`, { aprobada, resolucion_texto })
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
 const adminSlice = createSlice({
   name: 'admin',
   initialState: {
@@ -222,6 +293,7 @@ const adminSlice = createSlice({
     auditLogs: [],
     pendingPayouts: [],
     categories: [],
+    relaunchRequests: [],
     metrics: {
       ingresos_confirmados: 0,
       fondos_en_escrow: 0,
@@ -304,6 +376,16 @@ const adminSlice = createSlice({
       })
       .addCase(approveWithdrawal.fulfilled, (state, action) => {
         state.pendingPayouts = state.pendingPayouts.filter((p) => p.id !== action.meta.arg.id)
+      })
+
+      .addCase(fetchRelaunchRequests.pending, pending)
+      .addCase(fetchRelaunchRequests.fulfilled, (state, action) => {
+        state.loading = false
+        state.relaunchRequests = action.payload
+      })
+      .addCase(fetchRelaunchRequests.rejected, rejected)
+      .addCase(reviewRelaunchRequest.fulfilled, (state, action) => {
+        state.relaunchRequests = state.relaunchRequests.filter((r) => r.id !== action.meta.arg.id)
       })
   },
 })

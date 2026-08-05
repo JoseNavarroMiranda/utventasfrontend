@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchAdminMetrics } from '../../store/slices/adminSlice'
-import { fetchProducts } from '../../store/slices/productSlice'
-import { fetchSales } from '../../store/slices/saleSlice'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 
 function MetricCard({ label, value, color }) {
@@ -17,17 +15,13 @@ function MetricCard({ label, value, color }) {
 function AdminOverview() {
   const dispatch = useDispatch()
   const { metrics, loading } = useSelector((s) => s.admin)
-  const { items: sales, loading: salesLoading } = useSelector((s) => s.sales)
-  const { items: products, loading: productsLoading } = useSelector((s) => s.products)
 
   useEffect(() => {
     dispatch(fetchAdminMetrics())
-    dispatch(fetchProducts())
-    dispatch(fetchSales())
   }, [dispatch])
 
-  const disputeCount = sales.filter((s) => s.estado === 'en_disputa').length
-  const isLoading = loading || salesLoading || productsLoading
+  const disputeCount = metrics.disputas_activas || 0
+  const isLoading = loading
 
   if (isLoading && !metrics.total_usuarios) {
     return <LoadingSpinner className="py-20" size="lg" />
@@ -71,11 +65,11 @@ function AdminOverview() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Productos publicados</span>
-              <span className="font-medium text-white">{products.length || metrics.productos_publicados || 0}</span>
+              <span className="font-medium text-white">{metrics.productos_publicados || 0}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Ventas totales</span>
-              <span className="font-medium text-white">{sales.length}</span>
+              <span className="font-medium text-white">{metrics.pedidos_completados || 0}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-400">Dinero en Escrow</span>

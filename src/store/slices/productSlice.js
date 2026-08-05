@@ -16,7 +16,7 @@ function normalizeProduct(data) {
     autor_correo: data.Usuario?.correo ?? data.autor_correo,
     autor_telefono: data.Usuario?.telefono_defecto ?? data.autor_telefono,
     created_at: data.fecha_publicacion ?? data.created_at,
-    categoria: data.Categorium?.nombre ?? data.categoria,
+    categoria: data.Categoria?.nombre ?? data.Categorium?.nombre ?? data.categoria,
     autor_verificado: data.Usuario?.verificado_como_vendedor ?? false,
     contacto_telefono: data.contacto_telefono,
     contacto_metodo: data.contacto_metodo,

@@ -5,6 +5,7 @@ import saleReducer from './slices/saleSlice'
 import withdrawalReducer from './slices/withdrawalSlice'
 import adminReducer from './slices/adminSlice'
 import buyerReducer from './slices/buyerSlice'
+import relaunchReducer from './slices/relaunchSlice'
 
 export const store = configureStore({
   reducer: {
@@ -14,5 +15,6 @@ export const store = configureStore({
     withdrawals: withdrawalReducer,
     admin: adminReducer,
     buyer: buyerReducer,
+    relaunch: relaunchReducer,
   },
 })

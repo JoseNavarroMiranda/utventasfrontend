@@ -38,7 +38,7 @@ function PurchaseList() {
       result = result.filter((p) => p.producto?.categoria === category)
     }
 
-    return result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    return [...result].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   }, [purchases, tab, search, category])
 
   if (loading) return <LoadingSpinner className="py-20" size="lg" />

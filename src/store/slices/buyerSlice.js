@@ -58,9 +58,14 @@ export const fetchPurchaseDetail = createAsyncThunk(
 
 export const openDispute = createAsyncThunk(
   'buyer/openDispute',
-  async ({ purchaseId, motivo, descripcion }, { rejectWithValue }) => {
+  async ({ purchaseId, motivo, descripcion, imagenes }, { rejectWithValue }) => {
     try {
-      const res = await api.post('/api/comprador/disputas', { pedido_id: purchaseId, motivo, descripcion })
+      const res = await api.post('/api/comprador/disputas', {
+        pedido_id: purchaseId,
+        motivo,
+        descripcion,
+        imagenes,
+      })
       return { ...res.disputa, id: res.disputa.disputa_id }
     } catch (err) {
       return rejectWithValue(err.message)

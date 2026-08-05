@@ -6,6 +6,13 @@ import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
 import Modal from '../Shared/Modal'
 
+const DISPUTE_REASON_LABELS = {
+  producto_no_coincide: 'El producto no coincide con la descripción',
+  vendedor_no_se_presento: 'El vendedor no se presentó',
+  producto_defectuoso: 'El producto está defectuoso',
+  otro: 'Otro motivo',
+}
+
 function Timeline({ events }) {
   return (
     <div className="space-y-3">
@@ -97,6 +104,9 @@ function DisputeResolution() {
               <div>
                 <p className="text-xs text-slate-500">Producto</p>
                 <p className="text-sm font-medium text-white">{selected.producto?.titulo}</p>
+                <p className="text-xs text-slate-400">
+                  {selected.producto?.categoria && `Categoría: ${selected.producto.categoria}`}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">Comprador</p>
@@ -107,6 +117,85 @@ function DisputeResolution() {
                 <p className="text-xs text-slate-500">Vendedor</p>
                 <p className="text-sm text-white">{selected.vendedor?.nombre}</p>
                 <p className="text-xs text-slate-400">{selected.vendedor?.email}</p>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-400">Reporte del Comprador</p>
+              <div className="rounded-xl bg-slate-950/50 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge color="orange">
+                    {DISPUTE_REASON_LABELS[selected.motivo] || selected.motivo || 'Sin motivo'}
+                  </Badge>
+                  {selected.fecha_apertura && (
+                    <span className="text-xs text-slate-500">
+                      {new Date(selected.fecha_apertura).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  )}
+                </div>
+                {selected.descripcion ? (
+                  <p className="mt-3 text-sm leading-relaxed text-slate-300">"{selected.descripcion}"</p>
+                ) : (
+                  <p className="mt-3 text-xs italic text-slate-500">El comprador no agregó una descripción adicional.</p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-400">
+                Evidencias del comprador ({selected.evidencias?.length || 0})
+              </p>
+              {selected.evidencias?.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {selected.evidencias.map((img, i) => (
+                    <a key={i} href={img} target="_blank" rel="noreferrer">
+                      <img
+                        src={img}
+                        alt={`Evidencia ${i + 1}`}
+                        className="h-28 w-full rounded-lg border border-white/10 object-cover transition hover:border-orange-400/50 sm:h-32"
+                      />
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs italic text-slate-500">El comprador no adjuntó evidencias.</p>
+              )}
+            </div>
+
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-400">Publicación</p>
+              <div className="flex flex-col gap-4 rounded-xl bg-slate-950/50 p-4 sm:flex-row">
+                {selected.producto?.imagen ? (
+                  <img
+                    src={selected.producto.imagen}
+                    alt={selected.producto.titulo}
+                    className="h-40 w-full rounded-lg object-cover sm:w-40"
+                  />
+                ) : (
+                  <div className="flex h-40 w-full items-center justify-center rounded-lg bg-slate-800/60 sm:w-40">
+                    <span className="text-xs text-slate-500">Sin imagen</span>
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-sm font-bold text-white">{selected.producto?.titulo}</h4>
+                    {selected.producto?.es_activo === false && (
+                      <Badge color="red">Inactivo</Badge>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                    {selected.producto?.descripcion || 'Sin descripción'}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-400">
+                    <span>Precio: <strong className="text-white">${(selected.producto?.precio || 0).toLocaleString()} MXN</strong></span>
+                    {selected.producto?.categoria && <span>Categoría: {selected.producto.categoria}</span>}
+                    {selected.producto?.fecha_publicacion && (
+                      <span>
+                        Publicado: {new Date(selected.producto.fecha_publicacion).toLocaleDateString('es-MX')}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -133,11 +222,16 @@ function DisputeResolution() {
               </label>
             </div>
 
-            <div className="flex items-center justify-between border-t border-white/10 pt-4">
-              <p className="text-sm text-slate-400">
-                Monto en disputa: <strong className="text-white">${selected.monto.toLocaleString()} MXN</strong>
-              </p>
-              <div className="flex gap-3">
+            <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-slate-400">
+                  Monto en disputa: <strong className="text-white">${selected.monto.toLocaleString()} MXN</strong>
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Al reembolsar al comprador, la publicación quedará suspendida y el vendedor deberá solicitar su relanzamiento.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <Button
                   variant="danger"
                   onClick={() => handleResolve('REEMBOLSO')}

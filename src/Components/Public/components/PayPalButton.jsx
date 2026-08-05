@@ -25,7 +25,7 @@ function PayPalButton({ productId, onComplete }) {
     setError('')
     setNotice('')
     try {
-      await api.put('/api/pedidos/confirmar-retencion', { paypal_order_id: orderId })
+      await api.put('/api/pedidos/confirmar-retencion', { paypal_order_id: orderId, producto_id: productId })
       completed.current = true
       dispatch(markProductAsOrdered(productId))
       onComplete?.()

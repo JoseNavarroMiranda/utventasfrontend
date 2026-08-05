@@ -14,6 +14,7 @@ import SellerVerification from './Components/Seller/SellerVerification'
 import SalesList from './Components/Seller/SalesList'
 import WithdrawalPanel from './Components/Seller/WithdrawalPanel'
 import StatisticsView from './Components/Seller/StatisticsView'
+import RelaunchRequests from './Components/Seller/RelaunchRequests'
 import AdminDashboard from './Components/Admin/AdminDashboard'
 import AdminOverview from './Components/Admin/AdminOverview'
 import UserModeration from './Components/Admin/UserModeration'
@@ -21,6 +22,7 @@ import ContentModeration from './Components/Admin/ContentModeration'
 import DisputeResolution from './Components/Admin/DisputeResolution'
 import PayoutManagement from './Components/Admin/PayoutManagement'
 import AuditLogs from './Components/Admin/AuditLogs'
+import RelaunchManagement from './Components/Admin/RelaunchManagement'
 import CompradorDashboard from './Components/Comprador/CompradorDashboard'
 import BuyerDashboardOverview from './Components/Comprador/DashboardOverview'
 import PurchaseList from './Components/Comprador/PurchaseList'
@@ -108,6 +110,7 @@ function App() {
           <Route path="verificacion" element={<SellerVerification />} />
           <Route path="ventas" element={<SalesList />} />
           <Route path="retiros" element={<WithdrawalPanel />} />
+          <Route path="relanzamientos" element={<RelaunchRequests />} />
           <Route path="estadisticas" element={<StatisticsView />} />
           <Route path="ajustes" element={<ProfileSettings />} />
         </Route>
@@ -126,6 +129,7 @@ function App() {
           <Route path="contenido" element={<ContentModeration />} />
           <Route path="disputas" element={<DisputeResolution />} />
           <Route path="pagos" element={<PayoutManagement />} />
+          <Route path="relanzamientos" element={<RelaunchManagement />} />
           <Route path="logs" element={<AuditLogs />} />
           <Route path="ajustes" element={<ProfileSettings />} />
         </Route>

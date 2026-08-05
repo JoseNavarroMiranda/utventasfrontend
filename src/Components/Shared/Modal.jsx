@@ -24,8 +24,8 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
       onClick={(e) => { if (e.target === overlayRef.current) onClose() }}
     >
-      <div className={`w-full ${sizes[size]} rounded-2xl border border-white/10 bg-slate-900 shadow-2xl`}>
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+      <div className={`w-full ${sizes[size]} max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl border border-white/10 bg-slate-900 shadow-2xl`}>
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-4 sm:px-6">
           <h2 className="text-lg font-bold text-white">{title}</h2>
           <button
             onClick={onClose}
@@ -36,7 +36,7 @@ function Modal({ isOpen, onClose, title, children, size = 'md' }) {
             </svg>
           </button>
         </div>
-        <div className="px-6 py-4">{children}</div>
+        <div className="px-4 py-4 sm:px-6">{children}</div>
       </div>
     </div>
   )

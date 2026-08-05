@@ -25,8 +25,20 @@ function HeroBanner({ search, onSearchChange }) {
               placeholder="Busca productos, servicios, espacios..."
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-slate-800/80 py-4 pr-4 pl-12 text-base text-white placeholder-slate-400 outline-none backdrop-blur transition focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20"
+              className="w-full rounded-2xl border border-white/10 bg-slate-800/80 py-4 pr-12 pl-12 text-base text-white placeholder-slate-400 outline-none backdrop-blur transition focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20"
             />
+            {search && (
+              <button
+                type="button"
+                aria-label="Limpiar búsqueda"
+                onClick={() => onSearchChange('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 

@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from 'react-router'
 import { fetchPurchases, openDispute } from '../../store/slices/buyerSlice'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import EmptyState from '../Shared/EmptyState'
+import Modal from '../Shared/Modal'
+import Button from '../Shared/Button'
 import DisputeForm from './components/DisputeForm'
 import PurchaseCard from './components/PurchaseCard'
 
@@ -13,7 +15,8 @@ function DisputePanel() {
   const location = useLocation()
   const { purchases, loading } = useSelector((s) => s.buyer)
   const [submitting, setSubmitting] = useState(false)
-  const [success, setSuccess] = useState(null)
+  const [reported, setReported] = useState(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const preselected = location.state?.purchase || null
 
@@ -23,20 +26,21 @@ function DisputePanel() {
 
   const disputable = purchases.filter((p) => p.estado === 'paid_escrow')
 
-  const handleSubmit = async ({ motivo, descripcion }) => {
+  const handleSubmit = async ({ motivo, descripcion, imagenes }) => {
     setSubmitting(true)
     const target = preselected || disputable[0]
     if (!target) { setSubmitting(false); return }
     try {
-      await dispatch(openDispute({ purchaseId: target.id, motivo, descripcion })).unwrap()
-      setSuccess(`Disputa reportada para "${target.producto?.titulo}". Un administrador revisará tu caso.`)
+      await dispatch(openDispute({ purchaseId: target.id, motivo, descripcion, imagenes })).unwrap()
       dispatch(fetchPurchases())
-    } catch {
-      setSuccess(null)
+      setReported(target)
+      setConfirmOpen(true)
     } finally {
       setSubmitting(false)
     }
   }
+
+  const alreadyReported = preselected?.estado === 'en_disputa'
 
   if (loading) return <LoadingSpinner className="py-20" size="lg" />
 
@@ -48,12 +52,6 @@ function DisputePanel() {
           Reporta incidencias si el producto no coincide o el vendedor no se presentó
         </p>
       </div>
-
-      {success && (
-        <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4">
-          <p className="text-sm text-emerald-300">{success}</p>
-        </div>
-      )}
 
       {disputable.length === 0 && !preselected ? (
         <EmptyState
@@ -82,8 +80,22 @@ function DisputePanel() {
               </div>
             )}
 
-            {preselected && (
+            {preselected && !reported && !alreadyReported && (
               <DisputeForm purchase={preselected} onSubmit={handleSubmit} submitting={submitting} />
+            )}
+
+            {(reported || alreadyReported) && (
+              <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-6">
+                <p className="text-3xl">✅</p>
+                <h3 className="mt-2 text-lg font-bold text-white">Objeto ya reportado</h3>
+                <p className="mt-1 text-sm text-slate-300">
+                  "{reported?.producto?.titulo || preselected?.producto?.titulo}" ya fue reportado y se
+                  encuentra en estado <strong>En Disputa</strong>. Un administrador revisará tu caso.
+                </p>
+                <Button variant="ghost" className="mt-4" onClick={() => navigate('/comprador/compras')}>
+                  Volver a mis compras
+                </Button>
+              </div>
             )}
           </div>
 
@@ -114,6 +126,18 @@ function DisputePanel() {
           </div>
         </div>
       )}
+
+      <Modal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} title="Incidencia reportada" size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-slate-300">
+            Tu incidencia para <strong className="text-white">{reported?.producto?.titulo}</strong> ha sido
+            enviada correctamente. Un administrador revisará el caso.
+          </p>
+          <div className="flex justify-end">
+            <Button onClick={() => setConfirmOpen(false)}>Entendido</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

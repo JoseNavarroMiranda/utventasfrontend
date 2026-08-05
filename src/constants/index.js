@@ -46,6 +46,7 @@ export const ADMIN_NAV_ITEMS = [
   { path: '/admin/usuarios', label: 'Usuarios' },
   { path: '/admin/contenido', label: 'Contenido' },
   { path: '/admin/disputas', label: 'Disputas' },
+  { path: '/admin/relanzamientos', label: 'Relanzamientos' },
   { path: '/admin/pagos', label: 'Pagos' },
   { path: '/admin/logs', label: 'Auditoria' },
   { path: '/admin/ajustes', label: 'Ajustes' },
@@ -65,6 +66,7 @@ export const NAV_ITEMS = [
   { path: '/vendedor/publicaciones/nueva', label: 'Nueva Publicación' },
   { path: '/vendedor/ventas', label: 'Mis Ventas' },
   { path: '/vendedor/retiros', label: 'Retiros' },
+  { path: '/vendedor/relanzamientos', label: 'Relanzamientos' },
   { path: '/vendedor/estadisticas', label: 'Estadisticas' },
   { path: '/vendedor/ajustes', label: 'Ajustes' },
 ]
