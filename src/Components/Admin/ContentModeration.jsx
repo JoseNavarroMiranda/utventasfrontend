@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router'
 import { fetchCategories, createCategory, updateCategory, deleteCategory } from '../../store/slices/adminSlice'
-import { fetchProducts } from '../../store/slices/productSlice'
+import { fetchProducts, fetchProductById } from '../../store/slices/productSlice'
 import { Table, Td } from '../Shared/Table'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
@@ -56,7 +57,7 @@ function ContentModeration() {
 
       <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">Productos Reportados</h2>
+          <h2 className="text-lg font-bold text-white">Productos Publicados</h2>
         </div>
         <Table
           headers={[
@@ -68,17 +69,30 @@ function ContentModeration() {
             { label: 'Acciones', right: true },
           ]}
         >
-          {products.filter((p) => p.id % 2 === 0).map((p) => (
+          {products.map((p) => (
             <tr key={p.id} className="transition hover:bg-white/[0.02]">
               <Td><p className="font-medium text-white">{p.titulo}</p></Td>
-              <Td className="text-slate-300">Vendedor #{p.id}</Td>
-              <Td><Badge>{p.categoria}</Badge></Td>
+              <Td className="text-slate-300">{p.autor_nombre || `Vendedor #${p.id_autor ?? p.id}`}</Td>
+              <Td><Badge>{p.categoria || 'Sin categoría'}</Badge></Td>
               <Td className="font-medium text-white">${(p.precio || 0).toLocaleString()} MXN</Td>
-              <Td><Badge color="yellow">Reportado</Badge></Td>
+              <Td>
+                {p.suspendido ? (
+                  <Badge color="orange">Suspendida</Badge>
+                ) : p.es_activo === false ? (
+                  <Badge color="slate">Vendida</Badge>
+                ) : (
+                  <Badge color="emerald">Activa</Badge>
+                )}
+              </Td>
               <Td right>
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="sm">Ver</Button>
-                  <Button variant="ghost" size="sm" className="text-red-400">Eliminar</Button>
+                  <Link
+                    to={`/productos/${p.id}`}
+                    onClick={() => dispatch(fetchProductById(p.id))}
+                    className="text-sm text-slate-400 transition hover:text-white"
+                  >
+                    Ver
+                  </Link>
                 </div>
               </Td>
             </tr>

@@ -17,11 +17,19 @@ function PayoutManagement() {
   }, [dispatch])
   const [batchId, setBatchId] = useState('')
   const [mode, setMode] = useState('single')
+  const [batchOpen, setBatchOpen] = useState(false)
 
   const openApprove = (payout) => {
     setBatchModal(payout)
     setBatchId('')
     setMode('single')
+  }
+
+  const openBatchApprove = () => {
+    setBatchModal(null)
+    setBatchId('')
+    setMode('batch')
+    setBatchOpen(true)
   }
 
   const handleApprove = () => {
@@ -31,6 +39,16 @@ function PayoutManagement() {
       paypal_payout_batch_id: batchId || `BATCH-${Date.now()}`,
     }))
     setBatchModal(null)
+  }
+
+  const handleBatchApprove = () => {
+    pendingPayouts.forEach((p) => {
+      dispatch(approveWithdrawal({
+        id: p.id,
+        paypal_payout_batch_id: batchId || `BATCH-${Date.now()}`,
+      }))
+    })
+    setBatchOpen(false)
   }
 
   const totalPending = pendingPayouts.reduce((s, p) => s + (p.monto || 0), 0)
@@ -98,13 +116,13 @@ function PayoutManagement() {
         </p>
         <Button
           disabled={pendingPayouts.length === 0}
-          onClick={() => setMode('batch')}
+          onClick={openBatchApprove}
         >
           Procesar Pago Masivo
         </Button>
       </div>
 
-      <Modal isOpen={!!batchModal} onClose={() => setBatchModal(null)} title={mode === 'batch' ? 'Pago Masivo' : 'Autorizar Pago'} size="sm">
+      <Modal isOpen={!!batchModal || batchOpen} onClose={() => { setBatchModal(null); setBatchOpen(false) }} title={mode === 'batch' ? 'Pago Masivo' : 'Autorizar Pago'} size="sm">
         {mode === 'batch' ? (
           <>
             <p className="mb-4 text-sm text-slate-300">
@@ -140,8 +158,8 @@ function PayoutManagement() {
           </>
         )}
         <div className="mt-6 flex justify-end gap-3">
-          <Button variant="ghost" onClick={() => setBatchModal(null)}>Cancelar</Button>
-          <Button onClick={handleApprove}>
+          <Button variant="ghost" onClick={() => { setBatchModal(null); setBatchOpen(false) }}>Cancelar</Button>
+          <Button onClick={mode === 'batch' ? handleBatchApprove : handleApprove}>
             {mode === 'batch' ? 'Procesar todo' : 'Autorizar Pago'}
           </Button>
         </div>

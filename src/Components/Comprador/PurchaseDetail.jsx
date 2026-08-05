@@ -7,6 +7,7 @@ import Button from '../Shared/Button'
 import OrderStatusBadge from './components/OrderStatusBadge'
 import EscrowStatus from './components/EscrowStatus'
 import DeliveryToken from './components/DeliveryToken'
+import PayPalRefundInfo from '../Shared/PayPalRefundInfo'
 import { ORDER_STATUS } from '../../constants'
 
 function DetailRow({ label, value }) {
@@ -55,6 +56,26 @@ function PurchaseDetail() {
 
       {(purchase.estado === 'paid_escrow' || purchase.estado === 'pagado_escrow' || purchase.estado === 'delivered_completed' || purchase.estado === 'entregado_completado') && (
         <DeliveryToken token={purchase.token_entrega} />
+      )}
+
+      {purchase.estado === 'cancelado_reembolsado' && (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-400/20 text-lg">💳</span>
+              <div>
+                <p className="font-semibold text-emerald-200">Reembolso recibido</p>
+                <p className="text-sm text-emerald-300/70">
+                  El monto de ${(purchase.monto || 0).toLocaleString()} MXN fue devuelto a tu cuenta de PayPal
+                  al resolverse la disputa a tu favor.
+                </p>
+              </div>
+            </div>
+          </div>
+          {purchase.paypal_refund_id && (
+            <PayPalRefundInfo transactionId={purchase.paypal_refund_id} status="CONFIRMADO" metodo="refund" />
+          )}
+        </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">

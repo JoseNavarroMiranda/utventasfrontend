@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchSales, validateToken, clearSaleError } from '../../store/slices/saleSlice'
 import { createWithdrawal, fetchMyWithdrawals } from '../../store/slices/withdrawalSlice'
-import { ORDER_STATUS } from '../../constants'
+import { ORDER_STATUS, PAYPAL_SANDBOX_DASHBOARD_URL } from '../../constants'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import EmptyState from '../Shared/EmptyState'
 import Badge from '../Shared/Badge'
@@ -64,19 +64,32 @@ function WithdrawalModal({ sale, onClose }) {
 function TokenModal({ sale, onClose }) {
   const dispatch = useDispatch()
   const [token, setToken] = useState('')
-  const [error, setError] = useState('')
+  const [feedback, setFeedback] = useState(null)
+  const [processing, setProcessing] = useState(false)
 
   const handleSubmit = async () => {
     if (!token.trim()) {
-      setError('Ingresa el token de entrega')
+      setFeedback({ type: 'error', msg: 'Ingresa el token de entrega' })
       return
     }
-    setError('')
+    setProcessing(true)
+    setFeedback(null)
     const result = await dispatch(validateToken({ saleId: sale.id, token_entrega: token.trim() }))
+    setProcessing(false)
     if (result.meta.requestStatus === 'fulfilled') {
-      onClose()
+      setFeedback({
+        type: 'success',
+        msg:
+          result.payload?.message ||
+          'La venta se completó correctamente. Los fondos fueron liberados y el pedido se marcó como vendido.',
+      })
     } else {
-      setError(result.payload || 'Token inválido')
+      setFeedback({
+        type: 'error',
+        msg:
+          result.payload?.message ||
+          'La venta no se finalizó correctamente. El pedido NO fue marcado como completado. Intenta nuevamente.',
+      })
     }
   }
 
@@ -89,19 +102,37 @@ function TokenModal({ sale, onClose }) {
         Producto: {sale.producto?.titulo || '—'} • Monto: ${(sale.monto || 0).toLocaleString()} MXN
       </p>
 
+      {feedback?.type === 'success' && (
+        <p className="mb-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300">
+          ✓ {feedback.msg}
+        </p>
+      )}
+      {feedback?.type === 'error' && (
+        <p className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          ✕ {feedback.msg}
+        </p>
+      )}
+
       <input
         type="text"
         placeholder="Ej. ABC123XYZ"
         value={token}
-        onChange={(e) => { setToken(e.target.value); setError('') }}
+        onChange={(e) => { setToken(e.target.value); setFeedback(null) }}
         className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
         autoFocus
       />
-      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
 
       <div className="mt-6 flex justify-end gap-3">
-        <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-        <Button onClick={handleSubmit}>Validar y Completar</Button>
+        {feedback?.type === 'success' ? (
+          <Button onClick={onClose}>Cerrar</Button>
+        ) : (
+          <>
+            <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+            <Button onClick={handleSubmit} loading={processing} disabled={processing}>
+              {processing ? 'Finalizando...' : 'Validar y Completar'}
+            </Button>
+          </>
+        )}
       </div>
     </Modal>
   )
@@ -163,6 +194,19 @@ function SalesList() {
                   <td className="px-4 py-3">
                     <p className="font-medium text-white">{sale.producto?.titulo || '—'}</p>
                     <p className="text-xs text-slate-500">#{sale.id}</p>
+                    {sale.paypal_refund_id && (
+                      <p className="mt-1 font-mono text-[10px] text-purple-400/80">
+                        Reembolso PayPal: {sale.paypal_refund_id}{' '}
+                        <a
+                          href={PAYPAL_SANDBOX_DASHBOARD_URL}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-indigo-300 underline hover:text-indigo-200"
+                        >
+                          (Validado en Sandbox ↗)
+                        </a>
+                      </p>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-slate-300">
                     {sale.comprador?.nombre || 'Comprador'}

@@ -5,7 +5,7 @@ const STATUS_MAP = {
   pendiente_pago: 'pending',
   pagado_escrow: 'paid_escrow',
   entregado_completado: 'delivered_completed',
-  cancelado_reembolsado: 'cancelled',
+  cancelado_reembolsado: 'cancelado_reembolsado',
 }
 
 function normalizeCompra(item) {
@@ -26,6 +26,7 @@ function normalizeCompra(item) {
     token_entrega: item.token_entrega,
     paypal_order_id: item.paypal_order_id,
     paypal_capture_id: item.paypal_capture_id,
+    paypal_refund_id: item.paypal_refund_id ?? null,
     created_at: item.fecha_creacion ?? item.created_at,
     metodo_contacto: item.Producto?.contacto_metodo ?? item.metodo_contacto,
     notas: item.notas,
@@ -102,7 +103,7 @@ const MOCK_PURCHASES = [
   { id: 9, producto: { titulo: 'Laptop HP Pavilion 15', categoria: 'Tecnología', precio: 9500, imagen: null }, vendedor: { nombre: 'Laura Flores', email: 'laura@utv.edu.mx', telefono: '+52 555 901 2345' }, monto: 9500, estado: 'delivered_completed', token_entrega: 'BCD901EFG', metodo_contacto: 'whatsapp', notas: 'Con cargador incluido', created_at: subMonths(new Date(), 1) },
   { id: 10, producto: { titulo: 'Pack de libretas universitarias', categoria: 'Escolar', precio: 180, imagen: null }, vendedor: { nombre: 'Carmen Vega', email: 'carmen@utv.edu.mx', telefono: '+52 555 012 3456' }, monto: 180, estado: 'pending', metodo_contacto: 'correo', notas: '5 libretas', created_at: subMonths(new Date(), 0) },
   { id: 11, producto: { titulo: 'Teclado mecánico RGB', categoria: 'Accesorios', precio: 680, imagen: null }, vendedor: { nombre: 'Miguel Ángel', email: 'miguel@utv.edu.mx', telefono: '+52 555 123 4567' }, monto: 680, estado: 'paid_escrow', token_entrega: 'HIJ234KLM', metodo_contacto: 'whatsapp', notas: 'Switch azul', created_at: subMonths(new Date(), 0) },
-  { id: 12, producto: { titulo: 'Monitor 24 pulgadas', categoria: 'Tecnología', precio: 2200, imagen: null }, vendedor: { nombre: 'Sofía López', email: 'sofia@utv.edu.mx', telefono: '+52 555 234 5678' }, monto: 2200, estado: 'cancelado_reembolsado', metodo_contacto: 'correo', notas: 'Reembolso procesado', created_at: subMonths(new Date(), 6) },
+  { id: 12, producto: { titulo: 'Monitor 24 pulgadas', categoria: 'Tecnología', precio: 2200, imagen: null }, vendedor: { nombre: 'Sofía López', email: 'sofia@utv.edu.mx', telefono: '+52 555 234 5678' }, monto: 2200, estado: 'cancelado_reembolsado', paypal_refund_id: '6XG12345ABCDEFG', metodo_contacto: 'correo', notas: 'Reembolso procesado y validado en PayPal Sandbox', created_at: subMonths(new Date(), 6) },
 ]
 
 const buyerSlice = createSlice({

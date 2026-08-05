@@ -5,7 +5,7 @@ const STATUS_MAP = {
   pendiente_pago: 'pending',
   pagado_escrow: 'paid_escrow',
   entregado_completado: 'delivered_completed',
-  cancelado_reembolsado: 'cancelled',
+  cancelado_reembolsado: 'cancelado_reembolsado',
 }
 
 function normalizeSale(item) {
@@ -20,6 +20,7 @@ function normalizeSale(item) {
     monto: Number(item.precio_final ?? item.monto ?? 0),
     estado: STATUS_MAP[item.estado] || item.estado,
     token_entrega: item.token_entrega,
+    paypal_refund_id: item.paypal_refund_id ?? null,
     created_at: item.fecha_creacion ?? item.created_at,
   }
 }
@@ -29,7 +30,10 @@ export const fetchSales = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await api.get('/api/vendedor/historial-ventas')
-      return (res.ventas ?? []).map(normalizeSale)
+      return {
+        items: (res.ventas ?? []).map(normalizeSale),
+        totales: res.totales ?? null,
+      }
     } catch (err) {
       return rejectWithValue(err.message)
     }
@@ -71,7 +75,7 @@ const MOCK_SALES = [
 
 const saleSlice = createSlice({
   name: 'sales',
-  initialState: { items: MOCK_SALES, loading: false, error: null },
+  initialState: { items: MOCK_SALES, totales: null, loading: false, error: null },
   reducers: {
     clearSaleError(state) {
       state.error = null
@@ -85,7 +89,8 @@ const saleSlice = createSlice({
       })
       .addCase(fetchSales.fulfilled, (state, action) => {
         state.loading = false
-        state.items = action.payload
+        state.items = action.payload.items
+        state.totales = action.payload.totales
       })
       .addCase(fetchSales.rejected, (state, action) => {
         state.loading = false

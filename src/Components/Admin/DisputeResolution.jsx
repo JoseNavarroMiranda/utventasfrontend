@@ -5,6 +5,7 @@ import { Table, Td } from '../Shared/Table'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
 import Modal from '../Shared/Modal'
+import PayPalRefundInfo from '../Shared/PayPalRefundInfo'
 
 const DISPUTE_REASON_LABELS = {
   producto_no_coincide: 'El producto no coincide con la descripción',
@@ -69,15 +70,16 @@ function DisputeResolution() {
     )
     setSubmitting(false)
     if (res.meta.requestStatus === 'fulfilled') {
+      const paypal = res.payload?.paypal || null
       const msg =
         estado === 'REEMBOLSO'
-          ? 'Reembolso al comprador realizado. El pedido fue cancelado y la publicación quedó suspendida.'
+          ? 'Reembolso al comprador realizado y VALIDADO en PayPal Sandbox. El pedido fue cancelado y la publicación quedó suspendida.'
           : 'Fondos liberados al vendedor. El pedido se marcó como completado.'
       setFeedback({
         type: 'success',
         msg,
       })
-      setResolved({ estado, msg })
+      setResolved({ estado, msg, paypal })
     } else {
       setFeedback({
         type: 'error',
@@ -281,19 +283,28 @@ function DisputeResolution() {
             )}
 
             {resolved ? (
-              <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4">
-                <div className="flex items-start gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-sm font-bold text-slate-950">
-                    ✓
-                  </span>
-                  <div>
-                    <p className="font-semibold text-emerald-300">Disputa resuelta correctamente</p>
-                    <p className="mt-1 text-sm text-emerald-200/90">{resolved.msg}</p>
-                    <p className="mt-2 text-xs text-emerald-300/70">
-                      La disputa ya no aparece en la lista de pendientes. Puedes cerrar esta ventana.
-                    </p>
+              <div className="space-y-4">
+                <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-sm font-bold text-slate-950">
+                      ✓
+                    </span>
+                    <div>
+                      <p className="font-semibold text-emerald-300">Disputa resuelta correctamente</p>
+                      <p className="mt-1 text-sm text-emerald-200/90">{resolved.msg}</p>
+                      <p className="mt-2 text-xs text-emerald-300/70">
+                        La disputa ya no aparece en la lista de pendientes. Puedes cerrar esta ventana.
+                      </p>
+                    </div>
                   </div>
                 </div>
+                {resolved.estado === 'REEMBOLSO' && (
+                  <PayPalRefundInfo
+                    transactionId={resolved.paypal?.transaction_id}
+                    status={resolved.paypal?.status}
+                    metodo={resolved.paypal?.metodo}
+                  />
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between">

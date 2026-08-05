@@ -7,6 +7,7 @@ import { fetchMyWithdrawals } from '../../store/slices/withdrawalSlice'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
+import PayPalRefundInfo from '../Shared/PayPalRefundInfo'
 import { ORDER_STATUS } from '../../constants'
 
 function StatCard({ label, value, color }) {
@@ -22,7 +23,7 @@ function DashboardOverview() {
   const dispatch = useDispatch()
   const { user } = useSelector((s) => s.auth)
   const { items: products, loading: productsLoading } = useSelector((s) => s.products)
-  const { items: sales, loading: salesLoading } = useSelector((s) => s.sales)
+  const { items: sales, totales, loading: salesLoading } = useSelector((s) => s.sales)
   const { items: withdrawals } = useSelector((s) => s.withdrawals)
 
   useEffect(() => {
@@ -51,13 +52,23 @@ function DashboardOverview() {
       .reduce((sum, s) => sum + (s.monto || 0), 0),
     [sales]
   )
+  const refundTotal = useMemo(
+    () => sales
+      .filter((s) => s.estado === 'cancelado_reembolsado')
+      .reduce((sum, s) => sum + (s.monto || 0), 0),
+    [sales]
+  )
+  const refundedSales = useMemo(
+    () => sales.filter((s) => s.estado === 'cancelado_reembolsado'),
+    [sales]
+  )
   const pendingWithdrawals = useMemo(
     () => withdrawals
       .filter((w) => w.estado === 'pending')
       .reduce((sum, w) => sum + (w.monto || 0), 0),
     [withdrawals]
   )
-  const availableBalance = Math.max(0, completedTotal - pendingWithdrawals)
+  const availableBalance = Math.max(0, completedTotal - refundTotal - pendingWithdrawals)
 
   if (loading) return <LoadingSpinner className="py-20" size="lg" />
 
@@ -112,6 +123,58 @@ function DashboardOverview() {
         <StatCard label="Publicaciones Activas" value={activeProducts} color="border-l-4 border-l-blue-400" />
         <StatCard label="Pendientes de Token" value={pendingTokenSales} color="border-l-4 border-l-yellow-400" />
       </div>
+
+      {refundTotal > 0 && (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-red-400/20 bg-red-400/5 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold text-red-300">Devoluciones por disputas: -${refundTotal.toLocaleString()} MXN</p>
+                <p className="text-sm text-red-300/70">
+                  {refundedSales.length} pedido(s) reembolsado(s). Esta cantidad fue descontada de tu saldo disponible.
+                </p>
+              </div>
+              {totales?.monto_reembolsado != null && (
+                <p className="shrink-0 text-right text-xs text-red-300/70">
+                  Validado por el servidor:
+                  <br />vendido ${Number(totales.monto_vendido || 0).toLocaleString()} MXN · reembolsado -{Number(totales.monto_reembolsado || 0).toLocaleString()} MXN
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-lg font-bold text-white">Devoluciones validadas</h2>
+              <Badge color="red">Total descontado: -${refundTotal.toLocaleString()} MXN</Badge>
+            </div>
+            <div className="space-y-3">
+              {refundedSales.map((sale) => (
+                <div key={sale.id} className="rounded-xl bg-white/5 px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-white">{sale.producto?.titulo || 'Producto'}</p>
+                      <p className="text-xs text-slate-400">
+                        #{sale.id} · {sale.comprador?.nombre || 'Comprador'} ·{' '}
+                        {sale.created_at ? new Date(sale.created_at).toLocaleDateString('es-MX') : ''}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-sm font-semibold text-red-300">-${(sale.monto || 0).toLocaleString()} MXN</p>
+                      <p className="text-xs text-slate-500">Descontado del saldo</p>
+                    </div>
+                  </div>
+                  {sale.paypal_refund_id && (
+                    <div className="mt-3 border-t border-white/5 pt-3">
+                      <PayPalRefundInfo transactionId={sale.paypal_refund_id} status="CONFIRMADO" metodo="refund" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
           <div className="mb-4 flex items-center justify-between">

@@ -13,6 +13,7 @@ function PayPalButton({ productId, onComplete }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [success, setSuccess] = useState('')
   const [processing, setProcessing] = useState(false)
   const [clientId, setClientId] = useState(null)
   const containerRef = useRef(null)
@@ -24,15 +25,21 @@ function PayPalButton({ productId, onComplete }) {
     setProcessing(true)
     setError('')
     setNotice('')
+    setSuccess('')
     try {
       await api.put('/api/pedidos/confirmar-retencion', { paypal_order_id: orderId, producto_id: productId })
       completed.current = true
+      setProcessing(false)
+      setSuccess('Tu compra se completó correctamente. Los fondos están en escrow. Redirigiendo a tus compras...')
       dispatch(markProductAsOrdered(productId))
       onComplete?.()
-      navigate('/comprador/compras')
+      setTimeout(() => navigate('/comprador/compras'), 1600)
     } catch (err) {
       setProcessing(false)
-      setError(err.message || 'No se pudo confirmar el pago en PayPal')
+      setError(
+        err.message ||
+          'Tu compra no se finalizó correctamente. El pedido no fue marcado como completado. Intenta nuevamente.'
+      )
     }
   }
 
@@ -70,6 +77,7 @@ function PayPalButton({ productId, onComplete }) {
           }
           setError('')
           setNotice('')
+          setSuccess('')
           const res = await api.post('/api/pedidos/', { producto_id: productId })
           return res.data?.paypal_order_id
         },
@@ -78,11 +86,15 @@ function PayPalButton({ productId, onComplete }) {
         },
         onCancel: () => {
           setProcessing(false)
-          setNotice('Pago cancelado. Puedes intentarlo de nuevo.')
+          setNotice(
+            'Pago cancelado. Tu compra NO fue marcada como completada. Puedes intentarlo de nuevo.'
+          )
         },
         onError: () => {
           setProcessing(false)
-          setError('Ocurrió un error con PayPal. Intenta nuevamente.')
+          setError(
+            'Ocurrió un error con PayPal. Tu compra no se finalizó correctamente y no fue marcada como completada. Intenta nuevamente.'
+          )
         },
       }).render(containerRef.current)
         .then(() => setLoading(false))
@@ -110,8 +122,20 @@ function PayPalButton({ productId, onComplete }) {
   return (
     <div className="space-y-3">
       <div ref={containerRef} className="min-h-[40px]" />
+      {success && (
+        <p className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300">
+          ✓ {success}
+        </p>
+      )}
       {notice && (
-        <p className="rounded-xl bg-yellow-400/10 px-4 py-3 text-sm text-yellow-200">{notice}</p>
+        <p className="rounded-xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-200">
+          {notice}
+        </p>
+      )}
+      {error && (
+        <p className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          ✕ {error}
+        </p>
       )}
       {processing && (
         <div className="flex items-center justify-center gap-2 py-2">

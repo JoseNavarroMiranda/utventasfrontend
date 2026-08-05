@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { fetchSales } from '../../store/slices/saleSlice'
 import { fetchMyWithdrawals } from '../../store/slices/withdrawalSlice'
 import { WITHDRAWAL_STATUS } from '../../constants'
 import Badge from '../Shared/Badge'
@@ -9,6 +10,7 @@ function WithdrawalPanel() {
   const { items: sales } = useSelector((s) => s.sales)
   const { items: withdrawals, loading: wLoading, error: wError } = useSelector((s) => s.withdrawals)
   useEffect(() => {
+    dispatch(fetchSales())
     dispatch(fetchMyWithdrawals())
   }, [dispatch])
 

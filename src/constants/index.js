@@ -72,3 +72,5 @@ export const NAV_ITEMS = [
 ]
 
 export const API_BASE = import.meta.env.VITE_API_URL || ''
+
+export const PAYPAL_SANDBOX_DASHBOARD_URL = 'https://www.sandbox.paypal.com/activity/payments'
