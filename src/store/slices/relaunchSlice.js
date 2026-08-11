@@ -30,6 +30,7 @@ function normalizeSuspendedProduct(item) {
     categoria: item.Categoria?.nombre ?? item.categoria,
     es_activo: item.es_activo,
     suspendido: item.suspendido,
+    motivo_suspension: item.motivo_suspension ?? null,
     imagenes,
     imagen: imagenes[0] || null,
     solicitud: normalizeSolicitud(solicitud),

@@ -172,6 +172,55 @@ export const deleteCategory = createAsyncThunk(
   }
 )
 
+export const fetchAdminProducts = createAsyncThunk(
+  'admin/fetchProducts',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get('/api/admin/productos')
+      return (res.data || []).map((p) => ({
+        id: p.producto_id,
+        titulo: p.titulo,
+        descripcion: p.descripcion,
+        precio: Number(p.precio ?? 0),
+        categoria: p.Categoria?.nombre ?? null,
+        es_activo: p.es_activo,
+        suspendido: p.suspendido,
+        motivo_suspension: p.motivo_suspension ?? null,
+        autor_nombre: p.Usuario?.nombre ?? null,
+        autor_correo: p.Usuario?.correo ?? null,
+        created_at: p.fecha_publicacion,
+        imagenes: (p.ProductoImagens || []).map((i) => i.url_imagen),
+      }))
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const suspendProduct = createAsyncThunk(
+  'admin/suspendProduct',
+  async ({ id, motivo }, { rejectWithValue }) => {
+    try {
+      const res = await api.put(`/api/admin/productos/${id}/suspender`, { motivo })
+      return { id, data: res.data }
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const reactivateProduct = createAsyncThunk(
+  'admin/reactivateProduct',
+  async (id, { rejectWithValue }) => {
+    try {
+      await api.put(`/api/admin/productos/${id}/activar`)
+      return id
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
 export const fetchPendingPayouts = createAsyncThunk(
   'admin/fetchPendingPayouts',
   async (_, { rejectWithValue }) => {
@@ -308,6 +357,7 @@ const adminSlice = createSlice({
     pendingPayouts: [],
     categories: [],
     relaunchRequests: [],
+    adminProducts: [],
     metrics: {
       ingresos_confirmados: 0,
       fondos_en_escrow: 0,
@@ -379,6 +429,41 @@ const adminSlice = createSlice({
       })
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.categories = state.categories.filter((c) => c.id !== action.payload)
+      })
+
+      .addCase(fetchAdminProducts.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchAdminProducts.fulfilled, (state, action) => {
+        state.loading = false
+        state.adminProducts = action.payload
+      })
+      .addCase(fetchAdminProducts.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(suspendProduct.fulfilled, (state, action) => {
+        const idx = state.adminProducts.findIndex((p) => p.id === action.payload.id)
+        if (idx !== -1) {
+          state.adminProducts[idx] = {
+            ...state.adminProducts[idx],
+            suspendido: true,
+            es_activo: false,
+            motivo_suspension: action.payload.data?.motivo_suspension ?? null,
+          }
+        }
+      })
+      .addCase(reactivateProduct.fulfilled, (state, action) => {
+        const idx = state.adminProducts.findIndex((p) => p.id === action.payload)
+        if (idx !== -1) {
+          state.adminProducts[idx] = {
+            ...state.adminProducts[idx],
+            suspendido: false,
+            es_activo: true,
+            motivo_suspension: null,
+          }
+        }
       })
 
       .addCase(fetchPendingPayouts.pending, pending)

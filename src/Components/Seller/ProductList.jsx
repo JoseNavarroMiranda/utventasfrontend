@@ -1,12 +1,41 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router'
-import { fetchProducts, deleteProduct, toggleProductActive } from '../../store/slices/productSlice'
+import { fetchProducts, deleteProduct } from '../../store/slices/productSlice'
 import LoadingSpinner from '../Shared/LoadingSpinner'
 import EmptyState from '../Shared/EmptyState'
 import Badge from '../Shared/Badge'
 import Button from '../Shared/Button'
 import Modal from '../Shared/Modal'
+
+function SuspendedBanner({ products }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-orange-400/30 bg-orange-500/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="text-sm text-orange-300">
+          {products.length} publicación{products.length !== 1 ? 'es' : ''} suspendida
+          {products.length !== 1 ? 's' : ''}. Debes solicitar su relanzamiento para volver a venderla.
+        </p>
+        {products.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {products.map((p) => (
+              <li key={p.id} className="text-xs text-orange-200/80">
+                <span className="font-medium text-orange-200">{p.titulo}</span>
+                {p.motivo_suspension ? ` — ${p.motivo_suspension}` : ''}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <Link
+        to="/vendedor/relanzamientos"
+        className="shrink-0 text-xs font-semibold text-orange-200 underline transition hover:text-orange-100"
+      >
+        Solicitar relanzamiento
+      </Link>
+    </div>
+  )
+}
 
 function ProductList() {
   const dispatch = useDispatch()
@@ -18,10 +47,6 @@ function ProductList() {
   useEffect(() => {
     dispatch(fetchProducts())
   }, [dispatch])
-
-  const handleToggleActive = (product) => {
-    dispatch(toggleProductActive({ id: product.id, es_activo: !product.es_activo }))
-  }
 
   const handleDelete = () => {
     if (!deleteTarget) return
@@ -51,20 +76,7 @@ function ProductList() {
   if (activeProducts.length === 0 && !showInactive) {
     return (
       <div className="space-y-6">
-        {suspendedProducts.length > 0 && (
-          <div className="flex flex-col gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-orange-300">
-              {suspendedProducts.length} publicación{suspendedProducts.length !== 1 ? 'es' : ''} suspendida
-              {suspendedProducts.length !== 1 ? 's' : ''} por resolución de disputa. Debes solicitar su relanzamiento para volver a venderla.
-            </p>
-            <Link
-              to="/vendedor/relanzamientos"
-              className="shrink-0 text-xs font-semibold text-orange-200 underline transition hover:text-orange-100"
-            >
-              Solicitar relanzamiento
-            </Link>
-          </div>
-        )}
+        {suspendedProducts.length > 0 && <SuspendedBanner products={suspendedProducts} />}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white">Mis Publicaciones</h1>
@@ -90,20 +102,7 @@ function ProductList() {
 
   return (
     <div className="space-y-6">
-      {suspendedProducts.length > 0 && (
-        <div className="flex flex-col gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-orange-300">
-            {suspendedProducts.length} publicación{suspendedProducts.length !== 1 ? 'es' : ''} suspendida
-            {suspendedProducts.length !== 1 ? 's' : ''} por resolución de disputa. Debes solicitar su relanzamiento para volver a venderla.
-          </p>
-          <Link
-            to="/vendedor/relanzamientos"
-            className="shrink-0 text-xs font-semibold text-orange-200 underline transition hover:text-orange-100"
-          >
-            Solicitar relanzamiento
-          </Link>
-        </div>
-      )}
+      {suspendedProducts.length > 0 && <SuspendedBanner products={suspendedProducts} />}
 
       <div className="flex items-center justify-between">
         <div>

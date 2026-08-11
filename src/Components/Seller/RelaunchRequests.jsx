@@ -140,8 +140,8 @@ function RelaunchRequests() {
       <div>
         <h1 className="text-2xl font-bold text-white">Solicitudes de Relanzamiento</h1>
         <p className="mt-1 text-sm text-slate-400">
-          Si una de tus publicaciones quedó suspendida tras un reembolso, aquí puedes pedir que vuelva a estar
-          en línea para que otro comprador pueda adquirirla. Un administrador revisará tu solicitud.
+          Si una de tus publicaciones quedó suspendida (por el administrador o tras un reembolso), aquí puedes
+          pedir que vuelva a estar en línea para que otro comprador pueda adquirirla. Un administrador revisará tu solicitud.
         </p>
       </div>
 
@@ -149,7 +149,7 @@ function RelaunchRequests() {
         <EmptyState
           icon="✅"
           title="Sin publicaciones suspendidas"
-          description="No tienes publicaciones suspendidas tras un reembolso. Todas tus publicaciones están disponibles o vendidas."
+          description="No tienes publicaciones suspendidas. Todas tus publicaciones están disponibles o vendidas."
         />
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
@@ -178,6 +178,12 @@ function RelaunchRequests() {
                     <p className="mt-1 text-xs text-slate-400">
                       {product.categoria || 'Sin categoría'} · ${(product.precio || 0).toLocaleString()} MXN
                     </p>
+                    {product.motivo_suspension && (
+                      <p className="mt-2 rounded-lg border border-orange-400/20 bg-orange-500/10 px-3 py-2 text-xs text-orange-200">
+                        <span className="font-semibold">Motivo de la suspensión:</span>{' '}
+                        {product.motivo_suspension}
+                      </p>
+                    )}
                     {status ? (
                       <p className="mt-2 text-xs">
                         <Badge color={status.color}>{status.label}</Badge>
