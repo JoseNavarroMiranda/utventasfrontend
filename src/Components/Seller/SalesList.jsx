@@ -175,7 +175,7 @@ function SalesList() {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-white/10">
+      <div className="overflow-x-auto rounded-2xl border border-white/10">
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-800/50">
             <tr>
