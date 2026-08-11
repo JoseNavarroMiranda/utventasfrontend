@@ -106,6 +106,18 @@ export const fetchOrderedProductIds = createAsyncThunk(
   }
 )
 
+export const fetchPublicCategories = createAsyncThunk(
+  'products/fetchPublicCategories',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await api.get('/api/productos/categorias')
+      return (res.data || []).map((c) => c.nombre)
+    } catch (err) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
 export const promoteToPremium = createAsyncThunk(
   'products/promoteToPremium',
   async ({ id, orderId, dias, monto }, { rejectWithValue }) => {
@@ -144,7 +156,7 @@ const MOCK_PRODUCTS = [
 
 const productSlice = createSlice({
   name: 'products',
-  initialState: { items: MOCK_PRODUCTS, orderedProductIds: MOCK_ORDERED_IDS, loading: false, error: null },
+  initialState: { items: MOCK_PRODUCTS, orderedProductIds: MOCK_ORDERED_IDS, categories: [], loading: false, error: null },
   reducers: {
     clearProductError(state) {
       state.error = null
@@ -199,6 +211,9 @@ const productSlice = createSlice({
       })
       .addCase(fetchOrderedProductIds.fulfilled, (state, action) => {
         state.orderedProductIds = action.payload
+      })
+      .addCase(fetchPublicCategories.fulfilled, (state, action) => {
+        state.categories = action.payload
       })
       .addCase(toggleProductActive.fulfilled, (state, action) => {
         const idx = state.items.findIndex((p) => p.id === action.payload.id)

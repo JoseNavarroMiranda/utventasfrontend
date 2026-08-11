@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router'
-import { fetchActiveProducts, fetchOrderedProductIds } from '../../store/slices/productSlice'
+import { fetchActiveProducts, fetchOrderedProductIds, fetchPublicCategories } from '../../store/slices/productSlice'
 import PublicLayout from './components/PublicLayout'
 import HeroBanner from './components/HeroBanner'
 import CategoryGrid from './components/CategoryGrid'
@@ -11,7 +11,7 @@ import EmptyState from '../Shared/EmptyState'
 
 function Home() {
   const dispatch = useDispatch()
-  const { items: products, orderedProductIds, loading } = useSelector((s) => s.products)
+  const { items: products, orderedProductIds, categories, loading } = useSelector((s) => s.products)
   const [search, setSearch] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedCategories = searchParams.getAll('categoria')
@@ -21,6 +21,7 @@ function Home() {
   useEffect(() => {
     dispatch(fetchActiveProducts())
     dispatch(fetchOrderedProductIds())
+    dispatch(fetchPublicCategories())
   }, [dispatch])
 
   const toggleCategory = (category) => {
@@ -76,7 +77,7 @@ function Home() {
   return (
     <PublicLayout>
       <HeroBanner search={search} onSearchChange={handleSearchChange} />
-      <CategoryGrid selected={selectedCategories} onToggle={toggleCategory} />
+      <CategoryGrid categories={categories} selected={selectedCategories} onToggle={toggleCategory} />
 
       <section ref={resultsRef} className="scroll-mt-6 py-12">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">

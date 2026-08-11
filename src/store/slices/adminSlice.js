@@ -366,6 +366,21 @@ const adminSlice = createSlice({
       })
       .addCase(fetchCategories.rejected, rejected)
 
+      .addCase(createCategory.fulfilled, (state, action) => {
+        const data = action.payload?.data
+        if (data?.categoria_id) {
+          state.categories.push({ id: data.categoria_id, nombre: data.nombre })
+        }
+      })
+      .addCase(updateCategory.fulfilled, (state, action) => {
+        const data = action.payload?.data
+        const idx = state.categories.findIndex((c) => c.id === data?.categoria_id)
+        if (idx !== -1) state.categories[idx] = { id: data.categoria_id, nombre: data.nombre }
+      })
+      .addCase(deleteCategory.fulfilled, (state, action) => {
+        state.categories = state.categories.filter((c) => c.id !== action.payload)
+      })
+
       .addCase(fetchPendingPayouts.pending, pending)
       .addCase(fetchPendingPayouts.fulfilled, (state, action) => {
         state.loading = false
