@@ -4,7 +4,6 @@ import { Navigate, Route, Routes } from 'react-router'
 import { fetchProfile } from './store/slices/authSlice'
 import Login from './Components/Login/Login'
 import ForgotPassword from './Components/Login/ForgotPassword'
-import DashboardMain from './Components/Layout/Dashboard/DashboardMain'
 import SellerDashboard from './Components/Seller/SellerDashboard'
 import DashboardOverview from './Components/Seller/DashboardOverview'
 import ProductList from './Components/Seller/ProductList'
@@ -75,7 +74,6 @@ function App() {
         <Route path="/productos/:id" element={<ProductDetail />} />
         <Route path="/privacidad" element={<Privacy />} />
         <Route path="/terminos" element={<Terms />} />
-        <Route path="/ventas" element={<DashboardMain />} />
 
         <Route
           path="/comprador"

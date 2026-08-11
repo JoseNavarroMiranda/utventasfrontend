@@ -33,8 +33,8 @@ function PremiumSection() {
   const product = products.find((p) => p.id === Number(id))
 
   useEffect(() => {
-    if (products.length === 0) dispatch(fetchProducts())
-  }, [dispatch, products.length])
+    dispatch(fetchProducts())
+  }, [dispatch])
 
   useEffect(() => {
     fetch(`${API_BASE}/api/config/paypal`)

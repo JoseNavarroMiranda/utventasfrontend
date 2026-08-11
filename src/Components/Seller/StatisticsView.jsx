@@ -42,9 +42,9 @@ function StatisticsView() {
   const { balance } = useSelector((s) => s.withdrawals)
 
   useEffect(() => {
-    if (!products.length) dispatch(fetchProducts())
-    if (!sales.length) dispatch(fetchSales())
-  }, [dispatch, products.length, sales.length])
+    dispatch(fetchProducts())
+    dispatch(fetchSales())
+  }, [dispatch])
 
   const loading = pLoading || sLoading
 

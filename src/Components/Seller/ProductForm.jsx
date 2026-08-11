@@ -33,8 +33,8 @@ function ProductForm() {
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
-    if (products.length === 0) dispatch(fetchProducts())
-  }, [dispatch, products.length])
+    dispatch(fetchProducts())
+  }, [dispatch])
 
   useEffect(() => {
     if (!isEdit || products.length === 0) return

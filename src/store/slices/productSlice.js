@@ -141,22 +141,9 @@ export const toggleProductActive = createAsyncThunk(
   }
 )
 
-const MOCK_ORDERED_IDS = [2, 5, 8]
-
-const MOCK_PRODUCTS = [
-  { id: 1, titulo: 'Laptop Lenovo Ideapad 5', descripcion: 'Equipo ideal para clases y proyectos. 16GB RAM, 512GB SSD.', precio: 8500, categoria: 'Tecnologia', contacto_metodo: 'whatsapp', contacto_telefono: '+52 555 123 4567', autor_nombre: 'Carlos Mendoza', autor_correo: 'carlos@utv.edu.mx', es_activo: true, es_premium: true, imagenes: [], created_at: '2026-06-01T10:00:00Z' },
-  { id: 2, titulo: 'Mesa de estudio plegable', descripcion: 'Perfecta para departamento estudiantil. 120x60cm.', precio: 1200, categoria: 'Hogar', contacto_metodo: 'llamada', contacto_telefono: '+52 555 234 5678', autor_nombre: 'Luis Torres', autor_correo: 'luis@utv.edu.mx', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-05-15T14:30:00Z' },
-  { id: 3, titulo: 'Calculadora científica Casio', descripcion: 'Modelo FX-991LAX. Ideal para ingenieria.', precio: 450, categoria: 'Escolar', contacto_metodo: 'correo', contacto_telefono: '+52 555 345 6789', autor_nombre: 'Ana Rivera', autor_correo: 'ana@utv.edu.mx', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-04-20T09:00:00Z' },
-  { id: 4, titulo: 'Audifonos inalambricos Sony', descripcion: 'Cancelacion de ruido. 30h de bateria.', precio: 680, categoria: 'Accesorios', contacto_metodo: 'whatsapp', contacto_telefono: '+52 555 456 7890', autor_nombre: 'María López', autor_correo: 'maria@utv.edu.mx', es_activo: false, es_premium: false, imagenes: [], created_at: '2026-03-10T16:00:00Z' },
-  { id: 5, titulo: 'Camiseta universitaria talla M', descripcion: 'Nueva con etiqueta. Color gris.', precio: 250, categoria: 'Ropa', contacto_metodo: 'chat', contacto_telefono: '+52 555 567 8901', autor_nombre: 'Diana Torres', autor_correo: 'diana@utv.edu.mx', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-06-05T11:00:00Z' },
-  { id: 6, titulo: 'Libro Calculo Diferencial', descripcion: 'Autores: Stewart. 8va edicion. Como nuevo.', precio: 350, categoria: 'Libros', contacto_metodo: 'correo', contacto_telefono: '+52 555 678 9012', autor_nombre: 'Pedro Sánchez', autor_correo: 'pedro@utv.edu.mx', es_activo: true, es_premium: true, imagenes: [], created_at: '2026-05-28T08:00:00Z' },
-  { id: 7, titulo: 'Departamento cerca de UTV', descripcion: 'Renta de habitacion amueblada. Internet incluido.', precio: 3200, categoria: 'Espacios', contacto_metodo: 'llamada', contacto_telefono: '+52 555 789 0123', autor_nombre: 'Roberto Díaz', autor_correo: 'roberto@utv.edu.mx', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-06-10T15:00:00Z' },
-  { id: 8, titulo: 'Servicio de tutoria en matematicas', descripcion: 'Clases particulares de calculo, algebra y fisica.', precio: 150, categoria: 'Servicios', contacto_metodo: 'whatsapp', contacto_telefono: '+52 555 890 1234', autor_nombre: 'Jorge Cruz', autor_correo: 'jorge@utv.edu.mx', es_activo: true, es_premium: false, imagenes: [], created_at: '2026-06-12T12:00:00Z' },
-]
-
 const productSlice = createSlice({
   name: 'products',
-  initialState: { items: MOCK_PRODUCTS, orderedProductIds: MOCK_ORDERED_IDS, categories: [], loading: false, error: null },
+  initialState: { items: [], orderedProductIds: [], categories: [], loading: false, error: null },
   reducers: {
     clearProductError(state) {
       state.error = null
